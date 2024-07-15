@@ -1,7 +1,7 @@
 from pydantic import BaseModel
 
 
-class Note(BaseModel):
+class NoteResponse(BaseModel):
     name: str
     description: str
     content: str

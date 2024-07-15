@@ -1,0 +1,46 @@
+{
+	"info": {
+		"_postman_id": "49785577-39e0-4748-8321-bd10db12afff",
+		"name": "AlloBrain",
+		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json",
+		"_exporter_id": "8567590"
+	},
+	"item": [
+		{
+			"name": "CHECK health",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": "{{API_URL}}/health"
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "API_URL",
+			"value": "http://127.0.0.1:8000",
+			"type": "string"
+		}
+	]
+}

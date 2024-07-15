@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from contextlib import asynccontextmanager
 from .config import settings
 from .database import check_db_connection
+from .routers import notes
 
 
 @asynccontextmanager
