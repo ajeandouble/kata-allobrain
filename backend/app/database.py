@@ -1,10 +1,12 @@
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy import Column, DateTime, func
+from sqlalchemy.dialects.postgresql import UUID
+from uuid import uuid4
 from sqlalchemy.orm import sessionmaker
 import time
 from .config import settings
 
-print(settings.database_url)
 engine = create_engine(settings.database_url)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 session = SessionLocal()
@@ -30,3 +32,16 @@ def check_db_connection(max_retries=10, wait_seconds=5):
             print(f"Retrying in {wait_seconds} seconds...")
             time.sleep(wait_seconds)
     return False
+
+
+class BaseModel:
+    """
+    Augmented Base class for UUID-based models.
+    """
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid4)
+    created_at = Column(DateTime, default=func.now())
+    updated_at = Column(DateTime, default=func.now())
+
+
+Base = declarative_base(cls=BaseModel)

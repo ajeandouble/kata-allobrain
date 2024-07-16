@@ -1,12 +1,25 @@
-from sqlalchemy import Column, Integer, String, Boolean, UUID
-from sqlalchemy.orm import declarative_base
+from sqlalchemy import Column, Integer, String, ForeignKey
+from sqlalchemy.orm import relationship
+from sqlalchemy.dialects.postgresql import UUID
+from ..database import engine, Base
 
-Base = declarative_base()
+
+class NoteVersion(Base):
+    __tablename__ = "notes_versions"
+    title = Column(String)
+    content = Column(String)
+    version = Column(Integer, nullable=False)
+    note_id = Column(UUID(as_uuid=True), ForeignKey("notes.id"), nullable=False)
+    note = relationship("Note", back_populates="note_versions")
 
 
 class Note(Base):
     __tablename__ = "notes"
-    id = Column(UUID, primary_key=True)
     title = Column(String)
     content = Column(String)
-    updated = Column(Boolean)
+    note_versions = relationship(
+        NoteVersion, back_populates="note", cascade="all, delete-orphan"
+    )
+
+
+Base.metadata.create_all(engine)

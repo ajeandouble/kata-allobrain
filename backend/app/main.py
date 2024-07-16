@@ -18,3 +18,6 @@ app = FastAPI(lifespan=lifespan)
 @app.get("/health")
 async def get_health():
     return {"Status": "Ok"}
+
+
+app.include_router(notes.router, prefix="/notes", tags=["notes"])
