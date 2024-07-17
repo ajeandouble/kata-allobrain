@@ -1,42 +1,110 @@
 #root {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
+	max-width: 1280px;
 }
 
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
-}
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafbaa);
+/* Notes */
+
+.notes-container {
+	display: flex;
+	height: 100vh;
+	width: 100vw;
 }
 
-@keyframes logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+.notes__sidebar-toggle {
+	position: absolute;
+	top: 1vh;
+	left: 1vw;
+	width: 25px;
+	z-index: 1;
+	cursor: pointer;
+	opacity: 80%;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  a:nth-of-type(2) .logo {
-    animation: logo-spin infinite 20s linear;
-  }
+.notes__sidebar-toggle:hover {
+	opacity: 100%;
 }
 
-.card {
-  padding: 2em;
+.notes__sidebar-new-note {
+	position: absolute;
+	left: 17.5%;
+	top: 1vh;
+	width: 22px;
+	z-index: 1;
+	cursor: pointer;
+	opacity: 80%;
 }
 
-.read-the-docs {
-  color: #888;
+.notes__sidebar-new-note:hover {
+	opacity: 100%;
+}
+
+.notes-container__sidebar {
+	flex: 1;
+	padding-top: 2rem;
+	background-color: #171717;
+	overflow: hidden;
+	transition: flex 0.3s ease, max-width 0.3s ease;
+	display: flex;
+	flex-direction: column;
+}
+
+.notes-container__content {
+	flex: 4;
+}
+
+/* Notes Header */
+
+.notes-header {
+	padding-top: 0rem;
+	text-align: center;
+	font-weight: bold;
+}
+
+/* Notes Lists */
+
+.notes-list {
+	padding: 0 1rem 0 1rem;
+	margin-top: 1.5rem;
+	overflow-y: auto;
+}
+
+.notes-list__item {
+	list-style: none;
+	margin-bottom: 1.25rem;
+	text-overflow: ellipsis;
+	overflow-x: hidden;
+	cursor: pointer;
+	opacity: 90%;
+}
+
+.notes-list__item span.selected {
+	font-weight: bolder;
+	border-radius: 0.25rem;
+}
+
+.notes-list__item:hover {
+	opacity: 100%;
+}
+
+/* Note Editor */
+
+.note-editor {
+}
+
+.note-editor__header {
+	text-align: center;
+}
+
+.note-editor__header button {
+	font-weight: 300;
+	color: #424242;
+}
+.note-editor__header button:hover {
+	color: #696969;
+	transition-duration: 100ms;
+}
+
+.note-editor__content {
+	/* background-color: green; */
+	padding: 3rem;
 }

@@ -9,29 +9,26 @@ from ..schemas.notes import (
 )
 from ..models.notes import Note as NoteModel, NoteVersion as NoteVersionModel
 from sqlalchemy.dialects.postgresql import UUID
-from ..database import session, get_db
-from typing import List
+from ..database import get_db
+from typing import Optional
 from fastapi.responses import JSONResponse
 
 router = APIRouter()
 
 
 @router.get("/")
-async def get_all_notes(db: Session = Depends(get_db)):
-    all_notes = db.query(NoteModel).all()
-    return all_notes
-
-
-@router.get("/{id}")
-async def get_note(id: str, db: Session = Depends(get_db)):
-    note = db.query(NoteModel).filter(NoteModel.id == id).first()
-    if not note:
-        raise HTTPException(status_code=404, detail="Note not found")
-    return note
+async def read_all_notes(
+    skip: int = 0, limit: Optional[int] = None, db: Session = Depends(get_db)
+):
+    query = db.query(NoteModel).order_by(NoteModel.updated_at.desc())
+    if limit:
+        query = query.offset(skip).limit(limit)
+    notes = query.all()
+    return notes
 
 
 @router.post("/", response_model=PostNoteResponse)
-async def post_note(
+async def create_note(
     note: PostNoteRequest,
     db: Session = Depends(get_db),
 ):
@@ -51,6 +48,14 @@ async def post_note(
         "title": note.title,
         "content": note.content,
     }
+
+
+@router.get("/{id}")
+async def read_note(id: str, db: Session = Depends(get_db)):
+    note = db.query(NoteModel).filter(NoteModel.id == id).first()
+    if not note:
+        raise HTTPException(status_code=404, detail="Note not found")
+    return note
 
 
 @router.patch("/{id}", response_model=PutNoteResponse)
@@ -91,6 +96,9 @@ async def update_note(
     db.commit()
 
     return note
+
+
+# TODO: add delete
 
 
 @router.get("/{id}/versions")
