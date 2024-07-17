@@ -21,7 +21,8 @@ cors_options = {
     "allow_methods": ["*"],
     "allow_headers": ["*"],
 }
-app.add_middleware(CORSMiddleware, **cors_options)
+
+app.add_middleware(CORSMiddleware, **cors_options)  # type: ignore
 
 
 @app.get("/health")

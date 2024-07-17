@@ -36,7 +36,6 @@ async def create_note(
     db.add(note)
     db.commit()
     db.refresh(note)
-
     version = NoteVersionModel(
         note_id=note.id, title=note.title, content=note.content, version=1
     )

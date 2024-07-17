@@ -2,10 +2,17 @@
 
 ## TODO
 
-- [ ] Separate CRUD fetch operations from components
-- [ ] Use dev/prod .env files and run with dotenv
+- [x] Separate CRUD fetch operations from components
+- [x] Use dev/prod .env files and run with dotenv
 - [ ] Note Editor
+  - [x] POST new Note
+  - [x] GET existing Note and Content
+  - [ ] Get existing Note and Versions
   - [ ] PATCH new notes
+- [ ] Note List
+  - [x] Display notes list
+  - [ ] Add note deletion
+    - [ ] Delete note button
 - [ ] Error Handling
 - [ ] Delete // TODOS
 - [ ] Show History on NoteEditor Header
@@ -17,6 +24,7 @@
 - ? [ ] ? Add some kind of formating
 - [ ] Add toasting
 - [ ] Routes
+- [ ] Clean and resolve typescript linter warnings/errors
 
 ### Others
 

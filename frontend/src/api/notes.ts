@@ -1,4 +1,4 @@
-/* eslint-disable no-empty */
+import { PostNoteBodyReq } from "../types/NoteTypes";
 const API_URL = import.meta.env.VITE_API_URL
 
 async function getNote() { }
@@ -6,16 +6,29 @@ async function getNote() { }
 async function getAllNotes() {
     try {
         const res: Response = await fetch(`${API_URL}/notes/`);
-        const data = await res.json()
-        console.log(data)
+        const data = await res.json();
+        console.log(data);
         return data;
     } catch (err) {
         console.error(err);
     }
 }
 
-async function postNote() {
-    try { } catch (err) { }
+async function postNote(body: PostNoteBodyReq) {
+    try {
+        const req = new Request(`${API_URL}/notes/`, {
+            headers: {
+                "Content-Type": "application/json",
+            },
+            method: "POST",
+            body: JSON.stringify(body)
+        });
+        const res: Response = await fetch(req);
+        const data = await res.json();
+        return data;
+    } catch (err) {
+        console.error(err);
+    }
 }
 
 async function patchNote() {

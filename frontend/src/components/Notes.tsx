@@ -3,16 +3,27 @@ import NotesList from './NotesList';
 import NoteEditor from './NoteEditor';
 import Header from './Header';
 import { getAllNotes } from '../api/notes';
+import { Note, NotesObj, GetNoteRes } from '../types/NoteTypes';
 
 export default function Notes() {
-	const [showSidebar, setShowSidebar] = useState(true);
+	const [notes, setNotes] = useState<NotesObj>({});
+	const [notesVersions, setNotesVersions] = useState<any[]>([]);
 	const [currNoteId, setCurrNoteId] = useState('');
-	const [notes, setNotes] = useState([]);
+	const [showSidebar, setShowSidebar] = useState(true);
 
 	useEffect(() => {
 		(async () => {
-			const notes = await getAllNotes();
-			setNotes(notes);
+			const notes: Note[] = (await getAllNotes()) as Note[];
+			console.log(notes);
+			const notesObj = notes.reduce(
+				(acc, curr) =>
+					({
+						...acc,
+						[curr.id]: curr,
+					} as NotesObj),
+				{}
+			);
+			setNotes(notesObj);
 		})();
 	}, []);
 
@@ -37,7 +48,7 @@ export default function Notes() {
 					/>
 				</div>
 				<div className="notes-container__content">
-					<NoteEditor />
+					{currNoteId in notes && <NoteEditor note={notes[currNoteId]} />}
 				</div>
 			</div>
 		</div>

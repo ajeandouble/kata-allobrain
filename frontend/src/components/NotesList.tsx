@@ -1,7 +1,8 @@
 import { Dispatch } from 'react';
+import { Note, NotesObj } from '../types/NoteTypes';
 
 type NotesListProps = {
-	notes: [];
+	notes: NotesObj;
 	currNoteId: string;
 	setCurrNoteId: Dispatch<string>;
 };
@@ -10,7 +11,7 @@ export default function NotesList({
 	currNoteId,
 	setCurrNoteId,
 }: NotesListProps) {
-	const ListItem = ({ note }: { note: any }) => (
+	const ListItem = ({ note }: { note: Note }) => (
 		<li
 			key={note.id}
 			className={`notes-list__item`}
@@ -21,10 +22,11 @@ export default function NotesList({
 			</span>
 		</li>
 	);
+
 	return (
 		<div className="notes-list">
 			<ul className="notes-list__list">
-				{notes.map((n) => (
+				{Object.values(notes).map((n) => (
 					<ListItem key={n.id} note={n} />
 				))}
 			</ul>
