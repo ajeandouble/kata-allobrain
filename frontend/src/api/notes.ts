@@ -1,5 +1,5 @@
-import { PostNoteBodyReq } from "../types/NoteTypes";
-const API_URL = import.meta.env.VITE_API_URL
+import { GetNoteVersionsReq, PostNoteReq } from "../types/NoteTypes";
+const API_URL = import.meta.env.VITE_API_URL;
 
 async function getNote() { }
 
@@ -14,7 +14,8 @@ async function getAllNotes() {
     }
 }
 
-async function postNote(body: PostNoteBodyReq) {
+async function postNote(props: PostNoteReq) {
+    const body = props.body;
     try {
         const req = new Request(`${API_URL}/notes/`, {
             headers: {
@@ -25,13 +26,14 @@ async function postNote(body: PostNoteBodyReq) {
         });
         const res: Response = await fetch(req);
         const data = await res.json();
+        console.log(data);
         return data;
     } catch (err) {
         console.error(err);
     }
 }
 
-async function patchNote() {
+async function patchNote(props) {
     try { } catch (err) { }
 }
 
@@ -39,4 +41,16 @@ async function deleteNote() {
     try { } catch (err) { }
 }
 
-export { getNote, getAllNotes, postNote, patchNote, deleteNote }
+async function getNoteVersions(props: GetNoteVersionsReq) {
+    const { id } = props.params;
+    try {
+        const res: Response = await fetch(`${API_URL}/notes/${id}/versions`);
+        const data = await res.json();
+        console.log(data);
+        return data;
+    } catch (err) {
+        console.error(err);
+    }
+}
+
+export { postNote, getNote, getAllNotes, patchNote, deleteNote, getNoteVersions };

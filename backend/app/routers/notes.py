@@ -27,7 +27,7 @@ async def read_all_notes(
     return notes
 
 
-@router.post("/", response_model=PostNoteResponse)
+@router.post("/", status_code=201, response_model=PostNoteResponse)
 async def create_note(
     note: PostNoteRequest,
     db: Session = Depends(get_db),
@@ -72,7 +72,7 @@ async def update_note(
             should_update = True
 
     if not should_update:
-        return JSONResponse(status_code=status.HTTP_200_OK, content={})
+        return note
 
     db.commit()
 

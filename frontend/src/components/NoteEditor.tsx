@@ -4,26 +4,42 @@ import {
 	RichUtils,
 	Modifier,
 	convertToRaw,
-	KeyBindingUtil,
 	convertFromRaw,
 } from 'draft-js';
 import { Editor, SyntheticKeyboardEvent } from 'react-draft-wysiwyg';
 import 'react-draft-wysiwyg/dist/react-draft-wysiwyg.css';
-import { postNote } from '../api/notes';
-import { Note, PostNoteBodyReq } from '../types/NoteTypes';
+import { useNotes } from '../hooks/useNotes';
+import { PostNoteReq } from '../types/NoteTypes';
 
 const TAB_SIZE = 4;
 
-export default function NoteEditor({ note }: { note: Note }) {
+export default function NoteEditor({ currNoteId }: { currNoteId: string }) {
+	const { notes, createNote, noteVersions } = useNotes();
+	const note = notes[currNoteId];
+	const noteContent = note?.content;
+	console.log({ noteContent });
+
+	console.log({ noteVersions });
+	console.log(NoteEditor.name, notes, note);
+
 	const [editorState, setEditorState] = useState<EditorState>(
-		EditorState.createWithContent(convertFromRaw(JSON.parse(note.content)))
+		note?.content
+			? EditorState.createWithContent(convertFromRaw(JSON.parse(note.content)))
+			: EditorState.createEmpty()
 	);
 	console.log(NoteEditor.name);
 
 	useEffect(() => {
-		setEditorState(
-			EditorState.createWithContent(convertFromRaw(JSON.parse(note.content)))
-		);
+		if (note) {
+			setEditorState(
+				note?.content
+					? EditorState.createWithContent(
+							convertFromRaw(JSON.parse(note.content))
+							// eslint-disable-next-line no-mixed-spaces-and-tabs
+					  )
+					: EditorState.createEmpty()
+			);
+		}
 	}, [note]);
 
 	const editorRef = useRef<Editor>(null);
@@ -53,12 +69,12 @@ export default function NoteEditor({ note }: { note: Note }) {
 	};
 
 	const onSave = async () => {
-		const body: PostNoteBodyReq = {
+		const body: PostNoteReq['body'] = {
 			title: 'whateveras' + Math.random(),
 			content: JSON.stringify(convertToRaw(editorState.getCurrentContent())),
 		};
 		console.log(body);
-		await postNote(body);
+		createNote(body);
 	};
 
 	const onkeyDown = (evt: React.KeyboardEvent) => {
@@ -77,7 +93,7 @@ export default function NoteEditor({ note }: { note: Note }) {
 					<button onClick={onSave}>Post</button>
 				</div>
 			</div>
-			<h2 className="note-editor__title">{note.title}</h2>
+			<h2 className="note-editor__title">{note?.title}</h2>
 			<div className="note-editor__content">
 				<Editor
 					ref={editorRef}
@@ -92,6 +108,7 @@ export default function NoteEditor({ note }: { note: Note }) {
 					handleReturn={handleReturn}
 				/>
 			</div>
+			<pre>{JSON.stringify(noteVersions[currNoteId], null, 2)}</pre>
 			{/* <pre>{JSON.stringify(rawContentState)}</pre> */}
 			{/* <pre>{JSON.stringify(editorState, null, 2)}</pre> */}
 		</div>

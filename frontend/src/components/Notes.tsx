@@ -1,31 +1,23 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import NotesList from './NotesList';
 import NoteEditor from './NoteEditor';
 import Header from './Header';
-import { getAllNotes } from '../api/notes';
-import { Note, NotesObj, GetNoteRes } from '../types/NoteTypes';
+import { getAllNotes, postNote, getNoteVersions } from '../api/notes';
+import { Note, NotesObj, NoteVersion } from '../types/NoteTypes';
+import { useNotes } from '../hooks/useNotes';
 
 export default function Notes() {
-	const [notes, setNotes] = useState<NotesObj>({});
-	const [notesVersions, setNotesVersions] = useState<any[]>([]);
-	const [currNoteId, setCurrNoteId] = useState('');
+	const { currNoteId, setCurrNoteId, fetchNoteVersions, createNote } =
+		useNotes();
 	const [showSidebar, setShowSidebar] = useState(true);
 
 	useEffect(() => {
-		(async () => {
-			const notes: Note[] = (await getAllNotes()) as Note[];
-			console.log(notes);
-			const notesObj = notes.reduce(
-				(acc, curr) =>
-					({
-						...acc,
-						[curr.id]: curr,
-					} as NotesObj),
-				{}
-			);
-			setNotes(notesObj);
-		})();
-	}, []);
+		fetchNoteVersions(currNoteId);
+	}, [currNoteId, fetchNoteVersions]);
+
+	const onNewNote = () => {
+		createNote({ title: 'Untitle Note', content: '' });
+	};
 
 	return (
 		<div className="notes">
@@ -34,21 +26,22 @@ export default function Notes() {
 				src="/burger-menu.svg"
 				onClick={() => setShowSidebar((prevState) => !prevState)}
 			></img>
-			<img className="notes__sidebar-new-note" src="/new-note.svg"></img>
+			<img
+				className="notes__sidebar-new-note"
+				src="/new-note.svg"
+				onClick={onNewNote}
+			></img>
 			<div className="notes-container">
 				<div
 					className={`notes-container__sidebar${!showSidebar ? ' hidden' : ''}`}
 					style={{ maxWidth: showSidebar ? '100%' : '0%' }}
 				>
 					<Header />
-					<NotesList
-						notes={notes}
-						currNoteId={currNoteId}
-						setCurrNoteId={setCurrNoteId}
-					/>
+					<NotesList currNoteId={currNoteId} setCurrNoteId={setCurrNoteId} />
 				</div>
 				<div className="notes-container__content">
-					{currNoteId in notes && <NoteEditor note={notes[currNoteId]} />}
+					{currNoteId}
+					{currNoteId && <NoteEditor currNoteId={currNoteId} />}
 				</div>
 			</div>
 		</div>
