@@ -29,4 +29,4 @@ dist-ssr
 .env.prod
 .env.production
 
-.DS_Store
+**/.DS_Store

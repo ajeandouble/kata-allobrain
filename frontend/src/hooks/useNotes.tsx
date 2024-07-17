@@ -10,13 +10,13 @@ import {
 	Note,
 	NotesObj,
 	PostNoteReq,
-	PostNoteRes,
 	NoteVersion,
+	GetNoteVersionsRes,
 } from '../types/NoteTypes';
 
 export const useNotes = () => {
 	const [notes, setNotes] = useState<NotesObj>({});
-	const [noteVersions, setNoteVersions] = useState<{
+	const [notesVersions, setNotesVersions] = useState<{
 		[key: string]: NoteVersion[];
 	}>({});
 	const [currNoteId, setCurrNoteId] = useState('');
@@ -33,20 +33,21 @@ export const useNotes = () => {
 		setNotes(notesObj);
 	}, []);
 
-	const fetchNoteVersions = useCallback(
-		async (noteId: string) => {
-			if (!noteVersions[noteId]) {
-				const versions: NoteVersion[] = (await getNoteVersions({
-					params: { id: noteId },
-				})) as NoteVersion[];
-				setNoteVersions((prevVersions) => ({
-					...prevVersions,
-					[noteId]: versions,
-				}));
-			}
-		},
-		[noteVersions]
-	);
+	const fetchNoteVersions = useCallback(async (noteId: string) => {
+		if (!notesVersions[noteId]) {
+			const versions: NoteVersion[] = (await getNoteVersions({
+				params: { id: noteId },
+			})) as NoteVersion[];
+			setNotesVersions((prevVersions) => ({
+				...prevVersions,
+				[noteId]: versions,
+			}));
+			console.log('fetchNoteVersions', {
+				...notesVersions,
+				[noteId]: versions,
+			});
+		}
+	}, []);
 
 	useEffect(() => {
 		if (currNoteId) {
@@ -55,43 +56,48 @@ export const useNotes = () => {
 	}, [currNoteId, fetchNoteVersions]);
 
 	const createNote = async (body: PostNoteReq['body']) => {
-		const response = await postNote({ body });
-		if (response) {
+		const resNote = await postNote({ body });
+		if (resNote) {
 			const newNote: Note = {
-				id: response.id,
-				title: response.title,
-				content: response.content,
-				created_at: response.created_at,
-				updated_at: response.updated_at,
+				id: resNote.id,
+				title: resNote.title,
+				content: resNote.content,
+				created_at: resNote.created_at,
+				updated_at: resNote.updated_at,
 			};
 			setNotes((prevNotes) => ({
+				[resNote.id]: newNote,
 				...prevNotes,
-				[response.id]: newNote,
 			}));
+			const resNoteVersion: GetNoteVersionsRes = await getNoteVersions({
+				params: { id: resNote.id },
+			});
 			const newVersion: NoteVersion = {
-				note_id: response.id,
-				title: response.title,
-				content: response.content,
+				note_id: resNoteVersion.id,
+				title: resNoteVersion.title,
+				content: resNoteVersion.content,
 				version: 1,
+				created_at: resNoteVersion.created_at,
+				updated_at: resNoteVersion.updated_at,
 			};
-			setNoteVersions((prevVersions) => ({
+			setNotesVersions((prevVersions) => ({
 				...prevVersions,
-				[response.id]: [newVersion],
+				[resNote.id]: [newVersion],
 			}));
 			return newNote;
 		}
 	};
 
-	const addNoteVersion = async (noteId: string, body: PostNoteBodyReq) => {
-		const response = await patchNote(noteId, null, body);
+	const addNoteVersion = async (noteId: string, body: PostNoteReq['body']) => {
+		const response = await patchNote({ params: { id: noteId }, body });
 		if (response) {
 			const newVersion: NoteVersion = {
 				note_id: response.id,
 				title: response.title,
 				content: response.content,
-				version: noteVersions[noteId].length + 1,
+				version: notesVersions[noteId].length + 1,
 			};
-			setNoteVersions((prevVersions) => ({
+			setNotesVersions((prevVersions) => ({
 				...prevVersions,
 				[noteId]: [...(prevVersions[noteId] || []), newVersion],
 			}));
@@ -107,7 +113,7 @@ export const useNotes = () => {
 		currNoteId,
 		setCurrNoteId,
 		notes,
-		noteVersions,
+		notesVersions,
 		fetchNoteVersions,
 		createNote,
 		addNoteVersion,

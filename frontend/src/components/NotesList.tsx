@@ -1,19 +1,17 @@
-import { Dispatch } from 'react';
 import { Note, NotesObj } from '../types/NoteTypes';
-import { useNotes } from '../hooks/useNotes';
+import { useEffect, Dispatch } from 'react';
 
 type NotesListProps = {
-	// notes: NotesObj;
+	notes: NotesObj;
 	currNoteId: string;
 	setCurrNoteId: Dispatch<string>;
 };
 
 export default function NotesList({
+	notes,
 	currNoteId,
 	setCurrNoteId,
 }: NotesListProps) {
-	const { notes } = useNotes();
-
 	const ListItem = ({ note }: { note: Note }) => (
 		<li
 			key={note.id}
@@ -28,7 +26,6 @@ export default function NotesList({
 
 	return (
 		<div className="notes-list">
-			{currNoteId}
 			<ul className="notes-list__list">
 				{Object.values(notes).map((n) => (
 					<ListItem key={n.id} note={n} />

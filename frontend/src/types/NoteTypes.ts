@@ -43,7 +43,16 @@ type PostNoteRes = {
     title: string,
     content: string,
     created_at: string,
-    updated_at: string
+    updated_at: string,
+    note_version: GetNoteVersionRes
+}
+
+type PatchNoteReq = {
+    params: { id: string },
+    body: {
+        title: string,
+        content: string,
+    },
 }
 
 type GetNoteVersionsReq = {
@@ -52,4 +61,14 @@ type GetNoteVersionsReq = {
     }
 }
 
-export type { Note, NotesObj, NoteVersion, GetNoteRes, PostNoteReq, PostNoteRes, GetNoteVersionsReq };
+type GetNoteVersionsRes = {
+    id?: string,
+    title: string,
+    content: string,
+    version: number,
+    created_at?: string
+    updated_at?: string
+    note_id?: string
+}
+
+export type { Note, NotesObj, NoteVersion, GetNoteRes, PostNoteReq, PostNoteRes, GetNoteVersionsReq, GetNoteVersionsRes, PatchNoteReq };
