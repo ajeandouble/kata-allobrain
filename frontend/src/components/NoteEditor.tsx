@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, Dispatch } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import {
 	EditorState,
 	RichUtils,
@@ -8,11 +8,11 @@ import {
 } from 'draft-js';
 import { Editor, SyntheticKeyboardEvent } from 'react-draft-wysiwyg';
 import 'react-draft-wysiwyg/dist/react-draft-wysiwyg.css';
-import { Note, NoteObj, NoteVersion, PostNoteReq } from '../types/NoteTypes';
+import { Note, NotesObj, NoteVersion, PostNoteReq } from '../types/NoteTypes';
 const TAB_SIZE = 4;
 
 type NoteEditorProps = {
-	notes: NoteObj;
+	notes: NotesObj;
 	currNoteId: string;
 	createNote: (body: PostNoteReq['body']) => Promise<Note | undefined>;
 	addNoteVersion: (
@@ -28,20 +28,23 @@ export default function NoteEditor({
 	createNote,
 	addNoteVersion,
 }: NoteEditorProps) {
-	console.log();
-	const note = notes[currNoteId];
-	console.log({ note });
-	console.log({ note }, !!note?.content);
+	const latestVersion =
+		notesVersions && notesVersions[currNoteId] && notesVersions[currNoteId][0];
+	console.log('WTF', notesVersions[currNoteId]?.length);
+	const [title, setTitle] = useState(notes[currNoteId]?.title);
 
+	console.log();
+
+	console.log({ notesVersions });
+	console.log({ latestVersion });
 	const [editorState, setEditorState] = useState<EditorState>(
-		note?.content
-			? EditorState.createWithContent(convertFromRaw(JSON.parse(note.content)))
+		latestVersion?.content
+			? EditorState.createWithContent(
+					convertFromRaw(JSON.parse(latestVersion.content))
+			  )
 			: EditorState.createEmpty()
 	);
-	const latestVersion =
-		notesVersions &&
-		notesVersions[currNoteId] &&
-		notesVersions[currNoteId][notesVersions[currNoteId].length - 1];
+
 	useEffect(() => {
 		if (latestVersion) {
 			setEditorState(
@@ -87,17 +90,19 @@ export default function NoteEditor({
 		if (
 			latestVersion.content === rawContent &&
 			latestVersion.title === latestVersion.title
-		)
+		) {
 			return;
+		}
 		const body: PostNoteReq['body'] = {
-			title: note?.title || 'Untitled Note',
+			title: latestVersion?.title || 'Untitled Note',
 			content: rawContent,
 		};
-		if (!note?.id) {
+		if (!latestVersion) {
 			console.log('no note id');
 			await createNote(body);
 		} else {
-			await addNoteVersion(note.id, body);
+			await addNoteVersion(currNoteId, body);
+			console.log('FUCKKKKK');
 		}
 	};
 
@@ -111,8 +116,13 @@ export default function NoteEditor({
 
 	const onVersionSelect = (version: NoteVersion) => {
 		setEditorState(
-			EditorState.createWithContent(convertFromRaw(JSON.parse(version.content)))
+			version?.content
+				? EditorState.createWithContent(
+						convertFromRaw(JSON.parse(version.content))
+				  )
+				: EditorState.createEmpty()
 		);
+		// setTitle(version.title);
 	};
 
 	return (
@@ -120,15 +130,16 @@ export default function NoteEditor({
 			<div className="note-editor__header">
 				<div className="note-editor__header__versions">
 					<button>
-						Created at: {new Date(note?.created_at || '').toLocaleString()}
+						Created at: {!latestVersion && new Date().toLocaleString()}
 					</button>
 					<div className="note-editor__header__dropdown">
 						<ul>
 							{notesVersions[currNoteId]?.map((version, index) => (
 								<li key={index} onClick={() => onVersionSelect(version)}>
-									{`Version ${version.version}: ${new Date(
+									{/* {`Version ${version.version}: ${new Date(
 										version.created_at
-									).toLocaleString()}`}
+									).toLocaleString()}`} */}
+									{version.version}
 								</li>
 							))}
 						</ul>
@@ -139,7 +150,7 @@ export default function NoteEditor({
 					<button onClick={onSave}>Post</button>
 				</div>
 			</div>
-			<h2 className="note-editor__title">{note?.title}</h2>
+			<h2 className="note-editor__title">{title}</h2>
 			<div className="note-editor__content" onKeyDown={onKeyDown}>
 				<Editor
 					ref={editorRef}

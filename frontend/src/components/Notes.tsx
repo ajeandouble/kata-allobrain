@@ -6,6 +6,8 @@ import { useNotes } from '../hooks/useNotes';
 import { Note } from '../types/NoteTypes';
 
 export default function Notes() {
+	const [showSidebar, setShowSidebar] = useState(true);
+
 	const {
 		notes,
 		currNoteId,
@@ -15,13 +17,12 @@ export default function Notes() {
 		createNote,
 		addNoteVersion,
 	} = useNotes();
-	const [showSidebar, setShowSidebar] = useState(true);
 
-	useEffect(() => {
-		(async () => {
-			if (currNoteId) fetchNoteVersions(currNoteId);
-		})();
-	}, [currNoteId, fetchNoteVersions]);
+	// useEffect(() => {
+	// 	(async () => {
+	// 		if (currNoteId) fetchNoteVersions(currNoteId);
+	// 	})();
+	// }, [currNoteId, fetchNoteVersions]);
 
 	const onNewNote = async () => {
 		const newNote: Note | undefined = await createNote({
@@ -60,6 +61,7 @@ export default function Notes() {
 					{JSON.stringify({ bla: !!currNoteId })}
 					{!!currNoteId && (
 						<NoteEditor
+							key={currNoteId}
 							notes={notes}
 							currNoteId={currNoteId}
 							notesVersions={notesVersions}

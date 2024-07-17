@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy import cast, String
 from ..schemas.notes import (
     PutNoteRequest,
-    PutNoteResponse,
+    PatchNoteResponse,
     PostNoteRequest,
     PostNoteResponse,
 )
@@ -57,7 +57,7 @@ async def read_note(id: str, db: Session = Depends(get_db)):
     return note
 
 
-@router.patch("/{id}", response_model=PutNoteResponse)
+@router.patch("/{id}", response_model=PatchNoteResponse)
 async def update_note(
     id: str, updated_note: PutNoteRequest, db: Session = Depends(get_db)
 ):
@@ -94,7 +94,15 @@ async def update_note(
     db.add(new_version)
     db.commit()
 
-    return note
+    return {
+        "version_id": new_version.id,
+        "id": note.id,
+        "title": note.title,
+        "content": note.content,
+        "version": new_version.version,
+        "created_at": note.created_at,
+        "updated_at": note.updated_at,
+    }
 
 
 # TODO: add delete

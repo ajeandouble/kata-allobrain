@@ -7,15 +7,15 @@
 - [ ] Note Editor
   - [x] POST new Note
   - [x] GET existing Note and Content
-  - [ ] Get existing Note and Versions
-  - [ ] PATCH new notes
-- [ ] Note List
+  - [x] Get existing Note and Versions
+  - [x] PATCH new notes
+- [x] Note List
   - [x] Display notes list
   - [ ] Add note deletion
     - [ ] Delete note button
 - [ ] Error Handling
 - [ ] Delete // TODOS
-- [ ] Show History on NoteEditor Header
+- [x] Show History on NoteEditor Header
   - [ ] Created At vs Updated At on click
   - [ ] Show dropdown menu to navigate history
   - [ ] Add diff icon to show diff

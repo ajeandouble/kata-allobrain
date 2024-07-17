@@ -89,18 +89,25 @@ export const useNotes = () => {
 	};
 
 	const addNoteVersion = async (noteId: string, body: PostNoteReq['body']) => {
-		const response = await patchNote({ params: { id: noteId }, body });
-		if (response) {
+		const res = await patchNote({ params: { id: noteId }, body });
+		console.log({ noteId, res });
+		if (res) {
 			const newVersion: NoteVersion = {
-				note_id: response.id,
-				title: response.title,
-				content: response.content,
-				version: notesVersions[noteId].length + 1,
+				id: res.version_id,
+				title: res.title,
+				content: res.content,
+				version: res.version,
+				created_at: res.created_at,
+				updated_at: res.updated_at,
 			};
 			setNotesVersions((prevVersions) => ({
 				...prevVersions,
-				[noteId]: [...(prevVersions[noteId] || []), newVersion],
+				[noteId]: [newVersion, ...(prevVersions[noteId] || [])],
 			}));
+			console.log({
+				[noteId]: [...(notesVersions[noteId] || []), 'maPUTAINDEBITE'],
+			});
+
 			return newVersion;
 		}
 	};

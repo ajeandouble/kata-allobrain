@@ -1,4 +1,5 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, UUID4
+from datetime import datetime
 
 NOTE_TITLE_MIN_LENGTH = 5
 NOTE_TITLE_MAX_LENGTH = 5000
@@ -20,6 +21,11 @@ class PutNoteRequest(BaseModel):
     content: str = Field()
 
 
-class PutNoteResponse(BaseModel):
+class PatchNoteResponse(BaseModel):
+    id: UUID4
+    version_id: UUID4
     title: str
     content: str
+    created_at: datetime
+    updated_at: datetime
+    version: int
