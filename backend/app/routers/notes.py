@@ -98,7 +98,7 @@ async def update_note(
         "version_id": new_version.id,
         "version": new_version.version,
         "created_at": note.created_at,
-        "updated_at": note.updated_at,
+        "updated_at": new_version.updated_at,
     }
 
 

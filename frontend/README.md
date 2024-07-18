@@ -29,7 +29,7 @@
 -   [ ] Lazy loading of Note list / Note Versions
 -   ? [ ] ? Add some kind of formating
 -   [ ] Add toasting
--   [ ] Routes
+-   [ ] Routes!!!!!
 -   [ ] Clean and resolve typescript linter warnings/errors
 
 ### Others

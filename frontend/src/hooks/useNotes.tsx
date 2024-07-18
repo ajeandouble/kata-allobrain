@@ -80,13 +80,14 @@ export const useNotes = () => {
 
     const addNoteVersion = async (noteId: string, body: PostNoteReq["body"]) => {
         const res = await patchNote({ params: { id: noteId }, body });
+        console.log({ res });
         if (res) {
             const newVersion: NoteVersion = {
                 id: res.version_id,
                 title: res.title,
                 content: res.content,
                 version: res.version,
-                created_at: res.created_at,
+                created_at: res.updated_at,
                 updated_at: res.updated_at,
             };
             setNotesVersions((prevVersions) => ({
