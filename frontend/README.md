@@ -22,11 +22,11 @@
     -   [x] Show dropdown menu to navigate history
     -   [ ] Add diff icon to show diff !!!!
     -   [ ] Use diff library
--   [ ] USE PROVIDERS!!!
--   [ ] Add lazy loading of notes...
--   [ ] Add save button
 -   [ ] Memoization
 -   [ ] Lazy loading of Note list / Note Versions
+-   [x] USE PROVIDERS!!!
+-   [ ] Add lazy loading of notes...
+-   [ ] Add save button
 -   ? [ ] ? Add some kind of formating
 -   [ ] Add toasting
 -   [ ] Routes!!!!!

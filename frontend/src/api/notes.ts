@@ -1,4 +1,5 @@
 import { GetNoteVersionsReq, PostNoteReq, PatchNoteReq, DeleteNoteVersionReq } from "../types/NoteTypes";
+import ky from 'ky';
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -6,9 +7,7 @@ async function getNote() { }
 
 async function getAllNotes() {
     try {
-        const res: Response = await fetch(`${API_URL}/notes/`);
-        const data = await res.json();
-        if (res.status !== 200) throw new Error("Error getting Notes");
+        const data: Response = await ky.get(`${API_URL}/notes/`).json();
         return data;
     } catch (err) {
         console.error(err);
@@ -18,14 +17,7 @@ async function getAllNotes() {
 async function postNote(props: PostNoteReq) {
     const body = props.body;
     try {
-        const req = new Request(`${API_URL}/notes/`, {
-            headers: { "Content-Type": "application/json" },
-            method: "POST",
-            body: JSON.stringify(body)
-        });
-        const res: Response = await fetch(req);
-        const data = await res.json();
-        if (res.status !== 201) throw new Error("Error creating Note");
+        const data = await ky.post(`${API_URL}/notes/`, { json: body }).json();
         return data;
     } catch (err) {
         console.error(err);
@@ -36,33 +28,24 @@ async function patchNote(props: PatchNoteReq) {
     const { params, body } = props;
     const { id } = params;
     try {
-        const req = new Request(`${API_URL}/notes/${id}`, {
-            headers: { "Content-Type": "application/json" },
-            method: "PATCH",
-            body: JSON.stringify(body)
-        });
-        const res: Response = await fetch(req);
-        const data = await res.json();
-        if (res.status !== 200) throw new Error("Error patching Note");
+        const data = await ky.patch(`${API_URL}/notes/${id}`, { json: body }).json();
         return data;
     } catch (err) { console.error(err); }
 }
 
 async function deleteNote(props: DeleteNoteVersionReq) {
-    const { id } = props.params;
-    const req = new Request(`${API_URL}/notes/${id}`, {
-        method: "DELETE",
-    });
-    const res: Response = await fetch(req);
-    if (res.status !== 204) throw new Error("Can't delete Note");
+    try {
+        const { id } = props.params;
+        await ky.delete(`${API_URL}/notes/${id}`);
+    } catch (err) {
+        console.error(err);
+    }
 }
 
 async function getNoteVersions(props: GetNoteVersionsReq) {
     const { id } = props.params;
     try {
-        const res: Response = await fetch(`${API_URL}/notes/${id}/versions`);
-        const data = await res.json();
-        if (res.status !== 200) throw new Error("Error getting Note versions");
+        const data = await ky.get(`${API_URL}/notes/${id}/versions`).json();
         return data;
     } catch (err) {
         console.error(err);

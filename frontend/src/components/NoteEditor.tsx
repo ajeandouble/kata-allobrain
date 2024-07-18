@@ -3,58 +3,13 @@ import { EditorState, RichUtils, Modifier, convertToRaw, convertFromRaw } from "
 import { Editor, SyntheticKeyboardEvent } from "react-draft-wysiwyg";
 import "react-draft-wysiwyg/dist/react-draft-wysiwyg.css";
 import { Note, NotesObj, NoteVersion, PostNoteReq } from "../types/NoteTypes";
+import NoteVersionsDropDown from "./NoteVersionsDropDown";
+import { useNotesContext } from "../context/NotesContext";
 const TAB_SIZE = 4;
 
-// TODO: move to diferent file
-type NoteVersionDropDownProps = {
-    versions: NoteVersion[];
-    onSelect: Dispatch<NoteVersion>;
-    updateDate: string;
-};
-const NoteVersionDropdown = ({ versions, onSelect, updateDate }: NoteVersionDropDownProps) => {
-    const [showDropdown, setShowDropdown] = useState(false);
+export default function NoteEditor() {
+    const { notes, notesVersions, currNoteId, addNoteVersion } = useNotesContext();
 
-    const handleSelect = (version: NoteVersion) => {
-        onSelect(version);
-        setShowDropdown(false);
-    };
-
-    return (
-        <div className="note-version-dropdown" onMouseLeave={() => setShowDropdown(false)}>
-            <button
-                onMouseEnter={() => setShowDropdown(true)}
-                onClick={() => setShowDropdown(!showDropdown)}
-            >
-                {showDropdown ? "Versions" : new Date(updateDate).toLocaleString()}
-            </button>
-            {showDropdown && (
-                <ul className="note-version-dropdown__list">
-                    {versions.length > 1 &&
-                        versions.toSpliced(-1).map((version: NoteVersion) => (
-                            <li key={version.version} onClick={() => handleSelect(version)}>
-                                <b>{version.version}: </b>
-                                {new Date(version.created_at).toLocaleString()}
-                            </li>
-                        ))}
-                </ul>
-            )}
-        </div>
-    );
-};
-
-type NoteEditorProps = {
-    notes: NotesObj;
-    currNoteId: string;
-    createNote: (body: PostNoteReq["body"]) => Promise<Note | undefined>;
-    addNoteVersion: (noteId: string, body: PostNoteReq["body"]) => Promise<NoteVersion | undefined>;
-    notesVersions: Record<string, NoteVersion[]>;
-};
-export default function NoteEditor({
-    notes,
-    notesVersions,
-    currNoteId,
-    addNoteVersion,
-}: NoteEditorProps) {
     const latestVersion =
         notesVersions && notesVersions[currNoteId] && notesVersions[currNoteId][0];
     const [title, setTitle] = useState(notes[currNoteId]?.title);
@@ -176,7 +131,7 @@ export default function NoteEditor({
         <div className="note-editor">
             <div className="note-editor__header">
                 <div className="note-editor__header__versions">
-                    <NoteVersionDropdown
+                    <NoteVersionsDropDown
                         versions={notesVersions[currNoteId]}
                         onSelect={onVersionSelect}
                         updateDate={currentVersion?.updated_at} // FIXME: not necessary. better design states

@@ -1,8 +1,12 @@
-import './App.css';
-import Notes from './components/Notes';
-
+import "./App.css";
+import Notes from "./components/Notes";
+import { NotesProvider } from "./context/NotesContext";
 function App() {
-	return <Notes />;
+    return (
+        <NotesProvider>
+            <Notes />
+        </NotesProvider>
+    );
 }
 
 export default App;

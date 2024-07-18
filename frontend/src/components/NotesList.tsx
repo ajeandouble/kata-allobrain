@@ -1,19 +1,10 @@
-import { Note, NotesObj } from "../types/NoteTypes";
-import { useState, Dispatch } from "react";
+import { useNotesContext } from "../context/NotesContext";
+import { Note } from "../types/NoteTypes";
+import { useState } from "react";
 
-type NotesListProps = {
-    notes: NotesObj;
-    currNoteId: string;
-    setCurrNoteId: Dispatch<string>;
-    removeNote: (id: string) => void;
-};
+export default function NotesList() {
+    const { notes, currNoteId, setCurrNoteId, removeNote } = useNotesContext();
 
-export default function NotesList({
-    notes,
-    currNoteId,
-    setCurrNoteId,
-    removeNote,
-}: NotesListProps) {
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [noteToDelete, setNoteToDelete] = useState<string | null>(null);
 

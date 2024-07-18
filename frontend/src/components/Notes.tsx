@@ -2,12 +2,10 @@ import { useState } from "react";
 import NotesList from "./NotesList";
 import NoteEditor from "./NoteEditor";
 import Header from "./Header";
-import { useNotes } from "../hooks/useNotes";
 import { Note } from "../types/NoteTypes";
+import { useNotesContext } from "../context/NotesContext";
 
 export default function Notes() {
-    const [showSidebar, setShowSidebar] = useState(true);
-
     const {
         notes,
         currNoteId,
@@ -16,7 +14,8 @@ export default function Notes() {
         createNote,
         addNoteVersion,
         removeNote,
-    } = useNotes();
+    } = useNotesContext();
+    const [showSidebar, setShowSidebar] = useState(true);
 
     const handleNewNote = async () => {
         const newNote: Note | undefined = await createNote({
@@ -45,24 +44,9 @@ export default function Notes() {
                     style={{ maxWidth: showSidebar ? "100%" : "0%" }}
                 >
                     <Header />
-                    <NotesList
-                        notes={notes}
-                        currNoteId={currNoteId}
-                        setCurrNoteId={setCurrNoteId}
-                        removeNote={removeNote}
-                    />
+                    <NotesList />
                 </div>
-                <div className="notes-container__content">
-                    {!!currNoteId && (
-                        <NoteEditor
-                            notes={notes}
-                            currNoteId={currNoteId}
-                            notesVersions={notesVersions}
-                            createNote={createNote}
-                            addNoteVersion={addNoteVersion}
-                        />
-                    )}
-                </div>
+                <div className="notes-container__content">{!!currNoteId && <NoteEditor />}</div>
             </div>
         </div>
     );
