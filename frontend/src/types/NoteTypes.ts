@@ -15,8 +15,8 @@ type NoteVersion = {
     title: string,
     content: string,
     version: number,
-    created_at?: string
-    updated_at?: string
+    created_at: string
+    updated_at: string
     note_id?: string
 }
 
@@ -44,7 +44,6 @@ type PostNoteRes = {
     content: string,
     created_at: string,
     updated_at: string,
-    note_version: GetNoteVersionRes
 }
 
 type PatchNoteReq = {
@@ -53,6 +52,10 @@ type PatchNoteReq = {
         title: string,
         content: string,
     },
+}
+
+type DeleteNoteVersionReq = {
+    params: { id: string };
 }
 
 type GetNoteVersionsReq = {
@@ -66,9 +69,12 @@ type GetNoteVersionsRes = {
     title: string,
     content: string,
     version: number,
-    created_at?: string
-    updated_at?: string
+    created_at: string,
+    updated_at: string,
     note_id?: string
-}
+};
 
-export type { Note, NotesObj, NoteVersion, GetNoteRes, PostNoteReq, PostNoteRes, GetNoteVersionsReq, GetNoteVersionsRes, PatchNoteReq };
+// TODO: PatchNoteVersion Res
+export type {
+    Note, NotesObj, NoteVersion, PostNoteReq, PostNoteRes, GetNoteRes, PatchNoteReq, DeleteNoteVersionReq, GetNoteVersionsReq, GetNoteVersionsRes
+};

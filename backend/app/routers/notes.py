@@ -2,10 +2,11 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from sqlalchemy import cast, String
 from ..schemas.notes import (
-    PutNoteRequest,
-    PatchNoteResponse,
     PostNoteRequest,
     PostNoteResponse,
+    GetNoteResponse,
+    PatchNoteRequest,
+    PatchNoteResponse,
 )
 from ..models.notes import Note as NoteModel, NoteVersion as NoteVersionModel
 from sqlalchemy.dialects.postgresql import UUID
@@ -14,6 +15,24 @@ from typing import Optional
 from fastapi.responses import JSONResponse
 
 router = APIRouter()
+
+
+@router.post("/", status_code=201, response_model=PostNoteResponse)
+async def create_note(
+    note: PostNoteRequest,
+    db: Session = Depends(get_db),
+):
+    note = NoteModel(**note.model_dump())
+    db.add(note)
+    db.commit()
+    db.refresh(note)
+    version = NoteVersionModel(
+        note_id=note.id, title=note.title, content=note.content, version=0
+    )
+    db.add(version)
+    db.commit()
+
+    return note
 
 
 @router.get("/")
@@ -27,28 +46,6 @@ async def read_all_notes(
     return notes
 
 
-@router.post("/", status_code=201, response_model=PostNoteResponse)
-async def create_note(
-    note: PostNoteRequest,
-    db: Session = Depends(get_db),
-):
-    note = NoteModel(**note.model_dump())
-    db.add(note)
-    db.commit()
-    db.refresh(note)
-    version = NoteVersionModel(
-        note_id=note.id, title=note.title, content=note.content, version=1
-    )
-    db.add(version)
-    db.commit()
-
-    return {
-        "id": str(note.id),
-        "title": note.title,
-        "content": note.content,
-    }
-
-
 @router.get("/{id}")
 async def read_note(id: str, db: Session = Depends(get_db)):
     note = db.query(NoteModel).filter(NoteModel.id == id).first()
@@ -57,9 +54,9 @@ async def read_note(id: str, db: Session = Depends(get_db)):
     return note
 
 
-@router.patch("/{id}", response_model=PatchNoteResponse)
+@router.patch("/{id}", response_model=PatchNoteResponse | GetNoteResponse)
 async def update_note(
-    id: str, updated_note: PutNoteRequest, db: Session = Depends(get_db)
+    id: str, updated_note: PatchNoteRequest, db: Session = Depends(get_db)
 ):
     note = db.query(NoteModel).filter(NoteModel.id == id).first()
     if note is None:
@@ -95,17 +92,31 @@ async def update_note(
     db.commit()
 
     return {
-        "version_id": new_version.id,
         "id": note.id,
         "title": note.title,
         "content": note.content,
+        "version_id": new_version.id,
         "version": new_version.version,
         "created_at": note.created_at,
         "updated_at": note.updated_at,
     }
 
 
-# TODO: add delete
+@router.delete("/{id}", status_code=204)
+async def delete_note(id: str, db: Session = Depends(get_db)):
+    note = db.query(NoteModel).filter(NoteModel.id == id).first()
+    if not note:
+        raise HTTPException(status_code=404, detail=f"Note with id {id} not found")
+
+    # Delete all associated note versions
+    db.query(NoteVersionModel).filter(NoteVersionModel.note_id == note.id).delete(
+        synchronize_session=False
+    )
+    db.commit()
+
+    # Delete the note itself
+    db.delete(note)
+    db.commit()
 
 
 @router.get("/{id}/versions")
