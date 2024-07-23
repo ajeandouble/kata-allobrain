@@ -78,6 +78,7 @@ export const useNotes = () => {
             const resLatestNoteVersion = await getLatestNoteVersion({ params: { id: noteId } });
             if (!resLatestNoteVersion) throw new Error("Couldn't get latest note version");
             setNotes({ ...notes, [noteId]: { ...resNote } as Note });
+            // @ts-ignore
             setNotesVersions((prevVersions) => {
                 return ({
                     ...prevVersions,

@@ -8,11 +8,12 @@ from .routers import notes
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    if not check_db_connection(3, 1):
+    if not check_db_connection(15, 5):
         raise RuntimeError("Failed to connect to the database.")
     yield
 
 
+print("lifespan2")
 app = FastAPI(lifespan=lifespan)
 
 cors_options = {

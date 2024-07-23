@@ -27,6 +27,7 @@ const NotesContext = createContext<NotesContextType | null>(null);
 export const NotesProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const notesData = useNotes();
 
+    // @ts-ignore
     return <NotesContext.Provider value={notesData}>{children}</NotesContext.Provider>;
 };
 

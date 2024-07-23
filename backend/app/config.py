@@ -11,7 +11,6 @@ class Settings:
     database_url = ""
 
     def __init__(self):
-
         if not self.env or self.env.lower() not in [
             "dev",
             "development",
@@ -22,9 +21,9 @@ class Settings:
                 "Invalid ENVIRONMENT value. Expected 'development' or 'production'"
             )
         if self.env in ["dev", "development"]:
-            env_path = os.path.join(os.path.dirname(__file__), "../.env.dev")
+            env_path = os.path.join(os.path.dirname(__file__), "../.env.development")
         else:
-            env_path = os.path.join(os.path.dirname(__file__), "../.env.prod")
+            env_path = os.path.join(os.path.dirname(__file__), "../.env.production")
 
         if not load_dotenv(dotenv_path=env_path):
             raise FileNotFoundError(f"Environment file {env_path} not found")

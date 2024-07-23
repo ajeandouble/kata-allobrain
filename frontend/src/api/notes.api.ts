@@ -7,8 +7,8 @@ async function getNote() { }
 
 async function getAllNotes(): Promise<GetNoteRes[] | undefined> {
     try {
-        const data: Response = await ky.get(`${API_URL}/notes/`).json();
-        return data as GetAllNotesRes[];
+        const data: GetAllNotesRes = await ky.get(`${API_URL}/notes/`).json();
+        return data;
     } catch (err) {
         console.error(err);
     }

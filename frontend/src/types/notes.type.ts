@@ -28,7 +28,7 @@ type GetNoteRes = {
     updated_at: string
 }
 
-type GetAllNotesRes = GetNoteRes[];
+type GetAllNotesRes = GetNoteRes[]
 
 type PostNoteReq = {
     body: {

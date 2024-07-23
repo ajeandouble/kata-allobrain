@@ -141,10 +141,7 @@ export default function NoteEditor() {
             body
         );
         if (updatedNote) {
-            const [patchedNote, latestVersion] = updatedNote;
-            const content = latestVersion.content;
             setCurrVersion(0);
-            setTitle(patchedNote.title);
         }
     };
 
@@ -165,8 +162,9 @@ export default function NoteEditor() {
         setCurrVersion(versionIdx);
     };
 
-    const onInputKeyDown = (evt: KeyboardEvent) => {
-        if (evt.key === "Enter") {
+    // @ts-ignore
+    const onInputKeyDown = (evt: React.KeyboardEventHandler<HTMLInputElement>) => {
+        if ("key" in evt && evt.key === "Enter") {
             if (title.length === 0) {
                 setTitle("Untitled Note");
             } else if (editorRef?.current) {
@@ -200,6 +198,7 @@ export default function NoteEditor() {
                 <input
                     value={title}
                     onChange={(evt) => setTitle(evt.target.value)}
+                    // @ts-ignore
                     onKeyDown={onInputKeyDown}
                 ></input>
             </h2>
