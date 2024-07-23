@@ -1,4 +1,4 @@
-import { GetNoteRes, PostNoteRes, GetNoteVersionsReq, PostNoteReq, PatchNoteReq, PatchNoteRes, DeleteNoteVersionReq, GetNoteVersionRes, GetAllNoteVersionsRes, GetAllNotesRes } from "../types/NoteTypes";
+import { GetNoteRes, PostNoteRes, GetNoteVersionsReq, PostNoteReq, PatchNoteReq, PatchNoteRes, DeleteNoteVersionReq, GetNoteVersionRes, GetAllNoteVersionsRes, GetAllNotesRes } from "../types/notes.type";
 import ky from 'ky';
 
 const API_URL = import.meta.env.VITE_API_URL;

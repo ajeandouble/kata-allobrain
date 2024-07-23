@@ -1,7 +1,7 @@
 import { useState, useCallback } from "react";
 import NotesList from "./NotesList";
 import NoteEditor from "./NoteEditor";
-import { Note } from "../types/NoteTypes";
+import { Note } from "../types/notes.type";
 import { useNotesContext } from "../context/NotesContext";
 import { throttle } from "../utils";
 

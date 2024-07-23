@@ -10,7 +10,7 @@ import {
 
 import { Editor, SyntheticKeyboardEvent } from "react-draft-wysiwyg";
 import "react-draft-wysiwyg/dist/react-draft-wysiwyg.css";
-import { PostNoteReq, PatchNoteRes, GetNoteVersionRes } from "../types/NoteTypes";
+import { PostNoteReq, PatchNoteRes, GetNoteVersionRes } from "../types/notes.type";
 import NoteVersionsDropDown from "./NoteVersionsDropDown";
 import ComparisonEditor from "./ComparisonEditor";
 import { useNotesContext } from "../context/NotesContext";

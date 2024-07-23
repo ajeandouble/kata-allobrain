@@ -7,7 +7,7 @@ import {
     NotesObj,
     NoteVersion,
     PostNoteReq,
-} from "../types/NoteTypes";
+} from "../types/notes.type";
 
 type NotesContextType = {
     notes: NotesObj;

@@ -2,22 +2,41 @@
 
 Technical test for Allo Brain
 
-## Install
+## Install and run locally
+
+### Backend
+
+```sh
+$ pip3 install pipenv
+$ pipenv shell
+$ pipenv install
+```
+
+#### Test Backend
+
+Set up `.env.dev` in projet root following `.env.example` format.
+
+```sh
+$ pipenv shell
+$ pipenv run pytest`
+$ ENVIRONMENT=development; pipenv run uvicorn app.main:app --reload
+```
+
+### Frontend
+
+Set up `.env.development` in projet root following `.env.example` format.
+
+```sh
+$ npm i -g pnpm
+$ pnpm install
+$ pnpm run dev
+```
 
 ## TODO
 
-- [x] Boostrap fastAPI
-- [x] Use dotenv or whatever pythonesque to get env variables
-- [ ] Testing
-  - [ ] Units testing
-  - [ ] Integration testings
 - [ ] Dockerize
   - [ ] Docker files
   - [ ] Docker composes
-- [ ] Swagger
-  - [ ] Setup Swagger
-  - [ ] Complete relevant openapi schemas infos
-- [ ] Check Psycopg2 vs Psycopg2 binary
 
 ## References
 

@@ -9,12 +9,12 @@ import {
     deleteNote,
     getAllNoteVersions,
     getLatestNoteVersion
-} from "../api/notes";
+} from "../api/notes.api";
 import {
     Note, NotesObj, NoteVersion,
     PostNoteReq,
     GetNoteRes,
-} from "../types/NoteTypes";
+} from "../types/notes.type";
 
 export const useNotes = () => {
     const [notes, setNotes] = useState<NotesObj>({});

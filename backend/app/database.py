@@ -1,13 +1,16 @@
+import os
 from sqlalchemy import create_engine
 from sqlalchemy import String
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import Column, DateTime, func
 from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.orm import declarative_base
 from uuid import uuid4
 from sqlalchemy.orm import sessionmaker
 import time
 from .config import settings
 
+DATABASE_URL = os.getenv("TEST_DATABASE_URL", settings.database_url)
 engine = create_engine(settings.database_url)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 session = SessionLocal()

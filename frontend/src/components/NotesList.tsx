@@ -1,5 +1,5 @@
 import { useNotesContext } from "../context/NotesContext";
-import { Note } from "../types/NoteTypes";
+import { Note } from "../types/notes.type";
 import { useState } from "react";
 
 export default function NotesList() {

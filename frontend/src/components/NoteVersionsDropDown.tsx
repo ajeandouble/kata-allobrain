@@ -1,5 +1,5 @@
 import { useState, Dispatch } from "react";
-import { NoteVersion } from "../types/NoteTypes";
+import { NoteVersion } from "../types/notes.type";
 
 type NoteVersionDropDownProps = {
     versions: NoteVersion[];
