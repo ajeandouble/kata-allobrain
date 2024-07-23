@@ -7,7 +7,7 @@ import { useNotesContext } from "../context/NotesContext";
 import debounce from "../utils/debounce";
 
 export default function Notes() {
-    const { currNoteId, setCurrNoteId, createNote } = useNotesContext();
+    const { currNoteId, setCurrNoteId, createNote, notesVersions } = useNotesContext();
     const [showSidebar, setShowSidebar] = useState(true);
 
     const handleNewNote = async () => {
@@ -29,14 +29,16 @@ export default function Notes() {
                 hidden={!showSidebar}
                 className="notes__sidebar-new-note"
                 src="/new-note.svg"
-                onClick={debounce(handleNewNote)}
+                onClick={debounce(handleNewNote)} // THROTTLE instead of debounce
             ></img>
             <div className="notes-container">
                 <div className={`notes-container__sidebar${!showSidebar ? " hidden" : ""}`}>
                     <Header />
                     <NotesList />
                 </div>
-                <div className="notes-container__content">{!!currNoteId && <NoteEditor />}</div>
+                <div className="notes-container__content">
+                    {!!currNoteId && notesVersions[currNoteId] && <NoteEditor />}
+                </div>
             </div>
         </div>
     );

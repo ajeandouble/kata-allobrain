@@ -2,6 +2,7 @@
 
 ## TODO
 
+-   [ ] Throttle instead of debounce
 -   [x] Separate CRUD fetch operations from components
 -   [x] Use dev/prod .env files and run with dotenv
 -   [x] Note Editor

@@ -1,6 +1,13 @@
 import React, { createContext, useContext } from "react";
 import { useNotes } from "../hooks/useNotes";
-import { Note, NotesObj, NoteVersion, PostNoteReq } from "../types/NoteTypes";
+import {
+    GetNoteVersionRes,
+    PatchNoteRes,
+    Note,
+    NotesObj,
+    NoteVersion,
+    PostNoteReq,
+} from "../types/NoteTypes";
 
 type NotesContextType = {
     notes: NotesObj;
@@ -8,7 +15,10 @@ type NotesContextType = {
     currNoteId: string;
     setCurrNoteId: (id: string) => void;
     createNote: (body: PostNoteReq["body"]) => Promise<Note | undefined>;
-    addNoteVersion: (noteId: string, body: PostNoteReq["body"]) => Promise<NoteVersion | undefined>;
+    addNoteVersion: (
+        noteId: string,
+        body: PostNoteReq["body"]
+    ) => Promise<[PatchNoteRes, GetNoteVersionRes] | undefined>;
     removeNote: (noteId: string) => Promise<void>;
 };
 

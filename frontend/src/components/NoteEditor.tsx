@@ -2,47 +2,40 @@ import { useState, useRef, useEffect, FocusEventHandler } from "react";
 import { EditorState, RichUtils, Modifier, convertToRaw, convertFromRaw } from "draft-js";
 import { Editor, SyntheticKeyboardEvent } from "react-draft-wysiwyg";
 import "react-draft-wysiwyg/dist/react-draft-wysiwyg.css";
-import { NoteVersion, PostNoteReq } from "../types/NoteTypes";
+import {
+    Note,
+    NoteVersion,
+    PostNoteReq,
+    PatchNoteRes,
+    GetNoteVersionRes,
+} from "../types/NoteTypes";
 import NoteVersionsDropDown from "./NoteVersionsDropDown";
 import { useNotesContext } from "../context/NotesContext";
 const TAB_SIZE = 4;
 
 export default function NoteEditor() {
     const { notes, notesVersions, currNoteId, addNoteVersion } = useNotesContext();
-    const latestVersion =
-        notesVersions && notesVersions[currNoteId] && notesVersions[currNoteId][0];
-    const [title, setTitle] = useState(notes[currNoteId]?.title);
-    const [currentVersion, setCurrentVersion] = useState<NoteVersion | undefined>(undefined);
+    const [currVersion, setCurrentVersion] = useState<number | undefined>(undefined);
     const [editorState, setEditorState] = useState<EditorState>(EditorState.createEmpty());
+    const [title, setTitle] = useState("");
 
     useEffect(() => {
-        if (latestVersion?.content) {
-            const content = JSON.parse(latestVersion.content);
-            setEditorState(EditorState.createWithContent(convertFromRaw(content)));
-            setCurrentVersion(latestVersion);
-            setTitle(latestVersion.title);
-        } else {
-            setEditorState(EditorState.createEmpty());
+        const versionsLength = notesVersions[currNoteId].length;
+        if (versionsLength) {
+            setCurrentVersion(0);
+            const content = notesVersions[currNoteId][0].content;
+            if (content) {
+                const rawContent = JSON.parse(content);
+                setEditorState(EditorState.createWithContent(convertFromRaw(rawContent)));
+            } else {
+                setEditorState(EditorState.createEmpty());
+            }
+            setTitle(notes[currNoteId].title);
         }
-    }, [latestVersion, notesVersions, currNoteId]);
+        if (editorRef.current) editorRef.current.focusEditor();
+    }, [notes, notesVersions, currNoteId]);
 
     const editorRef = useRef<Editor>(null);
-    const titleInputRef = useRef<HTMLInputElement>(null);
-    useEffect(() => {
-        if (editorRef.current && latestVersion?.version > 0) {
-            console.log("AAAA", latestVersion);
-            editorRef.current.focusEditor();
-        } else if (latestVersion && titleInputRef.current) {
-            console.log("BBB", latestVersion);
-            titleInputRef.current.focus();
-            titleInputRef.current.setSelectionRange(0, titleInputRef.current.value.length);
-        }
-    }, [latestVersion]);
-
-    const onBlur = (_: FocusEventHandler): void => {
-        if (editorRef.current && latestVersion?.version > 0) editorRef.current.focusEditor();
-        else if (titleInputRef.current) titleInputRef.current.focus();
-    };
 
     const onTab = (evt: React.KeyboardEvent) => {
         evt.preventDefault();
@@ -62,18 +55,39 @@ export default function NoteEditor() {
     };
 
     const handleSave = async () => {
-        if (!title) return;
-
+        if (!title || currVersion === undefined) return;
+        console.log(handleSave.name);
+        console.log(
+            "WIUOQWIUEOIWUQE",
+            currVersion,
+            notesVersions[currNoteId][currVersion].content,
+            notesVersions[currNoteId][currVersion].title
+        );
         const rawContent = JSON.stringify(convertToRaw(editorState.getCurrentContent()));
-        if (currentVersion?.content === rawContent && currentVersion.title === title) {
+        if (
+            currVersion &&
+            notesVersions[currNoteId][currVersion].content === rawContent &&
+            notesVersions[currNoteId][currVersion].title === title
+        ) {
             return;
         }
         const body: PostNoteReq["body"] = {
             title: title,
             content: rawContent,
         };
-        const newVersion: NoteVersion | undefined = await addNoteVersion(currNoteId, body);
-        if (newVersion) setCurrentVersion(newVersion);
+        console.log({ body });
+        const updatedNote: [PatchNoteRes, GetNoteVersionRes] | undefined = await addNoteVersion(
+            currNoteId,
+            body
+        );
+        if (updatedNote) {
+            const [patchedNote, latestVersion] = updatedNote;
+            console.log(patchedNote, latestVersion);
+            const content = latestVersion.content;
+            console.log(content);
+            setCurrentVersion(0);
+            setTitle(patchedNote.title);
+        }
     };
 
     const onKeyDown = (evt: React.KeyboardEvent) => {
@@ -83,35 +97,27 @@ export default function NoteEditor() {
         }
     };
 
-    const onVersionSelect = (version: NoteVersion) => {
+    const onVersionSelect = (versionIdx: number) => {
+        const content = notesVersions[currNoteId][versionIdx].content;
+        console.log({ content });
         setEditorState(
-            version?.content
-                ? EditorState.createWithContent(convertFromRaw(JSON.parse(version.content)))
+            content
+                ? EditorState.createWithContent(convertFromRaw(JSON.parse(content)))
                 : EditorState.createEmpty()
         );
-        setTitle(version.title);
-        setCurrentVersion(version);
+        setCurrentVersion(versionIdx);
     };
 
-    const handleTitleUpdate = async () => {
-        if (title.length === 0) {
-            setTitle("Untitled Note");
-            return;
+    const onInputKeyDown = (evt) => {
+        console.log(evt.key);
+        if (evt.key === "Enter") {
+            console.log({ title });
+            if (title.length === 0) {
+                setTitle("Untitled Note");
+            } else if (editorRef?.current) {
+                editorRef.current.focusEditor();
+            }
         }
-        if (currentVersion?.title === title) return;
-
-        const rawContent = JSON.stringify(convertToRaw(editorState.getCurrentContent()));
-        const body: PostNoteReq["body"] = {
-            title,
-            content: rawContent,
-        };
-        const newVersion = await addNoteVersion(currNoteId, body);
-        if (newVersion) setCurrentVersion(newVersion);
-        if (editorRef.current) editorRef.current.focusEditor();
-    };
-
-    const onInputKeyDown = (e: React.KeyboardEvent) => {
-        if (e.key === "Enter") handleTitleUpdate();
     };
 
     return (
@@ -120,17 +126,15 @@ export default function NoteEditor() {
                 <div className="note-editor__header__versions">
                     <NoteVersionsDropDown
                         versions={notesVersions[currNoteId]}
+                        currentVersion={currVersion}
                         onSelect={onVersionSelect}
-                        updateDate={currentVersion?.updated_at}
                     />
                 </div>
-            </div>
+            </div>{" "}
             <h2 className="note-editor__title">
                 <input
-                    ref={titleInputRef}
                     value={title}
                     onChange={(evt) => setTitle(evt.target.value)}
-                    onBlur={onBlur}
                     onKeyDown={onInputKeyDown}
                 ></input>
             </h2>

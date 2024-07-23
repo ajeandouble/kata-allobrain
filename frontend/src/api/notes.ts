@@ -1,11 +1,11 @@
-import { GetNoteVersionsReq, PostNoteReq, PatchNoteReq, DeleteNoteVersionReq } from "../types/NoteTypes";
+import { GetNoteRes, PostNoteRes, GetNoteVersionsReq, PostNoteReq, PatchNoteReq, DeleteNoteVersionReq, GetNoteVersionRes, GetAllNoteVersionsRes } from "../types/NoteTypes";
 import ky from 'ky';
 
 const API_URL = import.meta.env.VITE_API_URL;
 
 async function getNote() { }
 
-async function getAllNotes() {
+async function getAllNotes(): Promise<GetNoteRes[] | undefined> {
     try {
         const data: Response = await ky.get(`${API_URL}/notes/`).json();
         return data;
@@ -14,11 +14,11 @@ async function getAllNotes() {
     }
 }
 
-async function postNote(props: PostNoteReq) {
+async function postNote(props: PostNoteReq): Promise<PostNoteRes | undefined> {
     const body = props.body;
     try {
         const data = await ky.post(`${API_URL}/notes/`, { json: body }).json();
-        return data;
+        return data as PostNoteRes;
     } catch (err) {
         console.error(err);
     }
@@ -42,14 +42,23 @@ async function deleteNote(props: DeleteNoteVersionReq) {
     }
 }
 
-async function getNoteVersions(props: GetNoteVersionsReq) {
+async function getAllNoteVersions(props: GetNoteVersionsReq): Promise<GetAllNoteVersionsRes | undefined> {
     const { id } = props.params;
     try {
         const data = await ky.get(`${API_URL}/notes/${id}/versions`).json();
-        return data;
+        return data as GetAllNoteVersionsRes;
+    } catch (err) {
+        console.error(err);
+    }
+}
+async function getLatestNoteVersion(props: GetNoteVersionsReq): Promise<GetNoteVersionRes | undefined> {
+    const { id } = props.params;
+    try {
+        const data = await ky.get(`${API_URL}/notes/${id}/versions/latest`).json();
+        return data as GetAllNoteVersionsRes;
     } catch (err) {
         console.error(err);
     }
 }
 
-export { postNote, getNote, getAllNotes, patchNote, deleteNote, getNoteVersions };
+export { postNote, getNote, getAllNotes, patchNote, deleteNote, getAllNoteVersions, getLatestNoteVersion };

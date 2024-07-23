@@ -10,13 +10,12 @@ CONTENT_MAX_LENGTH = 65536
 
 class PostNoteRequest(BaseModel):
     title: str = Field(min_length=NOTE_TITLE_MIN_LENGTH)
-    content: str = Field(max_length=CONTENT_MAX_LENGTH)
 
 
 class PostNoteResponse(BaseModel):
     id: UUID4
     title: str
-    content: str
+    latest_version: int
     created_at: datetime
     updated_at: datetime
 
@@ -24,7 +23,7 @@ class PostNoteResponse(BaseModel):
 class GetNoteResponse(BaseModel):
     id: UUID4
     title: str
-    content: str
+    latest_version: int
     created_at: datetime
     updated_at: datetime
 
@@ -36,9 +35,8 @@ class PatchNoteRequest(BaseModel):
 
 class PatchNoteResponse(BaseModel):
     id: UUID4
-    version_id: UUID4
     title: str
-    content: str
+    latest_version: int
     created_at: datetime
     updated_at: datetime
     version: int

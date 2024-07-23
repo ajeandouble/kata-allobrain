@@ -2,75 +2,58 @@ import {
     useState, useEffect,
 } from "react";
 
-import { getNote, getAllNotes, getNoteVersions, postNote, patchNote, deleteNote } from "../api/notes";
-import { Note, NotesObj, NoteVersion, PostNoteReq, GetNoteVersionsRes } from "../types/NoteTypes";
+import {
+    postNote,
+    getAllNotes,
+    patchNote,
+    deleteNote,
+    getAllNoteVersions,
+    getLatestNoteVersion
+} from "../api/notes";
+import {
+    Note, NotesObj, NoteVersion,
+    PostNoteReq,
+    GetNoteRes,
+    GetNoteVersion,
+    GetAllNoteVersionsRes,
+} from "../types/NoteTypes";
 
 export const useNotes = () => {
     const [notes, setNotes] = useState<NotesObj>({});
-    const [notesVersions, setNotesVersions] = useState<{
-        [key: string]: NoteVersion[];
-    }>({});
+    const [notesVersions, setNotesVersions] = useState<{ [key: string]: NoteVersion[]; }>({});
     const [currNoteId, setCurrNoteId] = useState("");
 
-    //Les useCallBack ne servaient à rien du tout
     const fetchNotes = async () => {
-        const notes: Note[] = (await getAllNotes()) as Note[];
+        const notes = (await getAllNotes()) as unknown;
         if (!notes) return;
-        const notesObj = notes.reduce((acc, curr) => ({ ...acc, [curr.id]: curr }), {} as NotesObj);
+        const notesObj = (notes as Note[]).reduce((acc, curr) => ({ ...acc, [curr.id]: curr }), {} as NotesObj);
         setNotes(notesObj);
     };
 
     const fetchNoteVersions = async (noteId: string) => {
-        console.log({ notesVersions });
         if (!notesVersions[noteId]) {
-            const versions: NoteVersion[] = (await getNoteVersions({
-                params: { id: noteId },
-            })) as NoteVersion[];
+            const versions: NoteVersion[] | undefined = (await getAllNoteVersions({ params: { id: noteId } })) as NoteVersion[];
 
-            setNotesVersions((prevVersions) => {
-                console.log(prevVersions);
-                return {
-                    ...prevVersions,
-                    [noteId]: versions,
-                };
-            });
-
-            console.log("fetchNoteVersions", {
-                ...notesVersions,
-                [noteId]: versions,
-            });
+            setNotesVersions((prevVersions) => ({ ...prevVersions, [noteId]: versions, }));
+            console.log("fetchNoteVersions", { ...notesVersions, [noteId]: versions, });
         }
     };
-
-
-    // const fetchNoteAndVersions = async (noteId: string) => {
-    //     try {
-    //         const note = await getNote({ params: { id: noteId } });
-    //         if (note) {
-    //             setNotes(prevNotes => ({ ...prevNotes, [noteId]: note }));
-    //             setCurrNoteId(noteId);
-    //             await fetchNoteVersions(noteId);
-    //         }
-    //         return note;
-    //     } catch (error) {
-    //         console.error("Error fetching note and versions:", error);
-    //         return null;
-    //     }
-    // };
 
     useEffect(() => {
         if (currNoteId) {
             fetchNoteVersions(currNoteId);
         }
-    }, [fetchNoteVersions, currNoteId]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [currNoteId]);
 
     const createNote = async (body: PostNoteReq["body"]) => {
-        const resNote = await postNote({ body });
-        if (resNote) {
+        const resNote = await postNote({ body }) as GetNoteRes;
+        try {
+            if (!resNote)
+                throw new Error("Can't create new Note");
             const newNote: Note = {
                 id: resNote.id,
                 title: resNote.title,
-                content: resNote.content,
                 created_at: resNote.created_at,
                 updated_at: resNote.updated_at,
             };
@@ -78,47 +61,38 @@ export const useNotes = () => {
                 [resNote.id]: newNote,
                 ...prevNotes,
             }));
-            const resNoteVersion: GetNoteVersionsRes = await getNoteVersions({
+            const resNoteVersion: any = await getLatestNoteVersion({
                 params: { id: resNote.id },
             });
-            const newVersion: NoteVersion = {
-                note_id: resNoteVersion.id,
-                title: resNoteVersion.title,
-                content: resNoteVersion.content,
-                version: 0,
-                created_at: resNoteVersion.created_at,
-                updated_at: resNoteVersion.updated_at,
-            };
-            setNotesVersions((prevVersions) => ({
-                ...prevVersions,
-                [resNote.id]: [newVersion],
-            }));
+            if (!resNoteVersion) throw new Error("Can't get latest note version");
+
+            setNotesVersions((prevVersions) => ({ ...prevVersions, [resNote.id]: [resNoteVersion as NoteVersion], }));
             return newNote;
+        }
+        catch (err) {
+            console.error(err);
         }
     };
 
     const addNoteVersion = async (noteId: string, body: PostNoteReq["body"]) => {
-        const res = await patchNote({ params: { id: noteId }, body });
-        console.log({ res });
-        if (res) {
-            const newVersion: NoteVersion = {
-                id: res.version_id,
-                title: res.title,
-                content: res.content,
-                version: res.version,
-                created_at: res.updated_at,
-                updated_at: res.updated_at,
-            };
-            console.log(notesVersions[noteId], noteId);
+        console.log({ body });
+        const resNote = await patchNote({ params: { id: noteId }, body });
+        try {
+            if (!resNote) throw new Error("Couldn't patch note");
 
+            const resLatestNoteVersion = await getLatestNoteVersion({ params: { id: noteId } });
+            console.log({ resLatestNoteVersion, resNote });
+            if (!resLatestNoteVersion) throw new Error("Couldn't get latest note version");
+            console.log({ resLatestNoteVersion });
+            setNotes({ ...notes, [noteId]: { ...resNote } as Note });
             setNotesVersions((prevVersions) => ({
                 ...prevVersions,
-                [noteId]: [newVersion, ...(prevVersions[noteId] || [])],
+                [noteId]: [resLatestNoteVersion, ...(prevVersions[noteId] || [])],
             }));
-
-            setNotes({ ...notes, [noteId]: { ...newVersion, id: noteId } as Note });
-
-            return newVersion;
+            return [resNote, resLatestNoteVersion];
+        }
+        catch (err) {
+            console.error(err);
         }
     };
 

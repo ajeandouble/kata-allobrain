@@ -3,19 +3,19 @@ import { NoteVersion } from "../types/NoteTypes";
 
 type NoteVersionDropDownProps = {
     versions: NoteVersion[];
-    onSelect: Dispatch<NoteVersion>;
-    updateDate: string;
+    currentVersion: number;
+    onSelect: Dispatch<number>;
 };
 
 export default function NoteVersionsDropDown({
     versions,
+    currentVersion,
     onSelect,
-    updateDate,
 }: NoteVersionDropDownProps) {
     const [showDropdown, setShowDropdown] = useState(false);
 
-    const handleSelect = (version: NoteVersion) => {
-        onSelect(version);
+    const handleSelect = (versionIdx: number) => {
+        onSelect(versionIdx);
         setShowDropdown(false);
     };
 
@@ -25,16 +25,22 @@ export default function NoteVersionsDropDown({
                 onMouseEnter={() => setShowDropdown(true)}
                 onClick={() => setShowDropdown(!showDropdown)}
             >
-                {showDropdown && versions.length > 1
-                    ? "Versions"
-                    : new Date(updateDate).toLocaleString()}
+                {showDropdown && versions.length > 1 ? (
+                    "Versions"
+                ) : (
+                    <span>
+                        <i>Last saved at: </i>
+                        {`${!!versions && new Date(versions[0].created_at).toLocaleString()}`}
+                    </span>
+                )}
             </button>
             {showDropdown && (
                 <ul className="note-version-dropdown__list">
-                    {versions.length > 1 &&
-                        versions.toSpliced(-1).map((version: NoteVersion) => (
-                            <li key={version.version} onClick={() => handleSelect(version)}>
-                                <b>{version.version}: </b>
+                    {currentVersion !== undefined &&
+                        versions.length > 1 &&
+                        versions.toSpliced(-1).map((version: NoteVersion, versionIdx: number) => (
+                            <li key={version.id} onClick={() => handleSelect(versionIdx)}>
+                                <b>{versions.length - versionIdx - 1}: </b>
                                 {new Date(version.created_at).toLocaleString()}
                             </li>
                         ))}

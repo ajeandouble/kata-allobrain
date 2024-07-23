@@ -4,22 +4,18 @@ from sqlalchemy.dialects.postgresql import UUID
 from ..database import engine, Base
 
 
-class NoteVersion(Base):
-    __tablename__ = "notes_versions"
-    title = Column(String)
-    content = Column(String)
-    version = Column(Integer, nullable=False)
-    note_id = Column(UUID(as_uuid=True), ForeignKey("notes.id"), nullable=False)
-    note = relationship("Note", back_populates="note_versions")
-
-
 class Note(Base):
     __tablename__ = "notes"
     title = Column(String)
+    latest_version = Column(Integer)
+    note_versions = relationship("NoteVersion", backref="note")
+
+
+class NoteVersion(Base):
+    __tablename__ = "notes_versions"
     content = Column(String)
-    note_versions = relationship(
-        NoteVersion, back_populates="note", cascade="all, delete-orphan"
-    )
+    version = Column(Integer, nullable=False)
+    note_id = Column(UUID(as_uuid=True), ForeignKey("notes.id"), nullable=False)
 
 
 Base.metadata.create_all(engine)
