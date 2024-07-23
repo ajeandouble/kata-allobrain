@@ -14,8 +14,6 @@ import {
     Note, NotesObj, NoteVersion,
     PostNoteReq,
     GetNoteRes,
-    GetNoteVersion,
-    GetAllNoteVersionsRes,
 } from "../types/NoteTypes";
 
 export const useNotes = () => {
@@ -33,9 +31,7 @@ export const useNotes = () => {
     const fetchNoteVersions = async (noteId: string) => {
         if (!notesVersions[noteId]) {
             const versions: NoteVersion[] | undefined = (await getAllNoteVersions({ params: { id: noteId } })) as NoteVersion[];
-
             setNotesVersions((prevVersions) => ({ ...prevVersions, [noteId]: versions, }));
-            console.log("fetchNoteVersions", { ...notesVersions, [noteId]: versions, });
         }
     };
 
@@ -75,20 +71,19 @@ export const useNotes = () => {
     };
 
     const addNoteVersion = async (noteId: string, body: PostNoteReq["body"]) => {
-        console.log({ body });
         const resNote = await patchNote({ params: { id: noteId }, body });
         try {
             if (!resNote) throw new Error("Couldn't patch note");
 
             const resLatestNoteVersion = await getLatestNoteVersion({ params: { id: noteId } });
-            console.log({ resLatestNoteVersion, resNote });
             if (!resLatestNoteVersion) throw new Error("Couldn't get latest note version");
-            console.log({ resLatestNoteVersion });
             setNotes({ ...notes, [noteId]: { ...resNote } as Note });
-            setNotesVersions((prevVersions) => ({
-                ...prevVersions,
-                [noteId]: [resLatestNoteVersion, ...(prevVersions[noteId] || [])],
-            }));
+            setNotesVersions((prevVersions) => {
+                return ({
+                    ...prevVersions,
+                    [noteId]: [resLatestNoteVersion, ...(prevVersions[noteId] || [])],
+                });
+            });
             return [resNote, resLatestNoteVersion];
         }
         catch (err) {

@@ -1,10 +1,9 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import NotesList from "./NotesList";
 import NoteEditor from "./NoteEditor";
-import Header from "./Header";
 import { Note } from "../types/NoteTypes";
 import { useNotesContext } from "../context/NotesContext";
-import debounce from "../utils/debounce";
+import { throttle } from "../utils";
 
 export default function Notes() {
     const { currNoteId, setCurrNoteId, createNote, notesVersions } = useNotesContext();
@@ -18,6 +17,8 @@ export default function Notes() {
         if (newNote) setCurrNoteId(newNote.id);
     };
 
+    const onNewNoteClick = useCallback(throttle(handleNewNote, 1000), []);
+
     return (
         <div className="notes">
             <img
@@ -29,11 +30,15 @@ export default function Notes() {
                 hidden={!showSidebar}
                 className="notes__sidebar-new-note"
                 src="/new-note.svg"
-                onClick={debounce(handleNewNote)} // THROTTLE instead of debounce
+                // eslint-disable-next-line react-hooks/exhaustive-deps
+                onClick={onNewNoteClick}
             ></img>
             <div className="notes-container">
                 <div className={`notes-container__sidebar${!showSidebar ? " hidden" : ""}`}>
-                    <Header />
+                    {" "}
+                    <div className="notes-header">
+                        <h3>Notes</h3>
+                    </div>
                     <NotesList />
                 </div>
                 <div className="notes-container__content">

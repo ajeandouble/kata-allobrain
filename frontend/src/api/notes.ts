@@ -1,4 +1,4 @@
-import { GetNoteRes, PostNoteRes, GetNoteVersionsReq, PostNoteReq, PatchNoteReq, DeleteNoteVersionReq, GetNoteVersionRes, GetAllNoteVersionsRes } from "../types/NoteTypes";
+import { GetNoteRes, PostNoteRes, GetNoteVersionsReq, PostNoteReq, PatchNoteReq, PatchNoteRes, DeleteNoteVersionReq, GetNoteVersionRes, GetAllNoteVersionsRes, GetAllNotesRes } from "../types/NoteTypes";
 import ky from 'ky';
 
 const API_URL = import.meta.env.VITE_API_URL;
@@ -8,7 +8,7 @@ async function getNote() { }
 async function getAllNotes(): Promise<GetNoteRes[] | undefined> {
     try {
         const data: Response = await ky.get(`${API_URL}/notes/`).json();
-        return data;
+        return data as GetAllNotesRes[];
     } catch (err) {
         console.error(err);
     }
@@ -29,7 +29,7 @@ async function patchNote(props: PatchNoteReq) {
     const { id } = params;
     try {
         const data = await ky.patch(`${API_URL}/notes/${id}`, { json: body }).json();
-        return data;
+        return data as PatchNoteRes;
     } catch (err) { console.error(err); }
 }
 
@@ -55,7 +55,7 @@ async function getLatestNoteVersion(props: GetNoteVersionsReq): Promise<GetNoteV
     const { id } = props.params;
     try {
         const data = await ky.get(`${API_URL}/notes/${id}/versions/latest`).json();
-        return data as GetAllNoteVersionsRes;
+        return data as GetNoteVersionRes;
     } catch (err) {
         console.error(err);
     }

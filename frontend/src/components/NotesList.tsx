@@ -20,7 +20,6 @@ export default function NotesList() {
             setNoteToDelete(null);
         }
     };
-    console.log(NotesList.name, { notes });
     const ListItem = ({ note }: { note: Note }) => (
         <li key={note.id} className={`notes-list__item`} onClick={() => setCurrNoteId(note.id)}>
             <span className={`${currNoteId === note.id ? " selected" : ""}`}>{note.title}</span>

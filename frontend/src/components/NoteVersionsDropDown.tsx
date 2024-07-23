@@ -3,20 +3,24 @@ import { NoteVersion } from "../types/NoteTypes";
 
 type NoteVersionDropDownProps = {
     versions: NoteVersion[];
-    currentVersion: number;
+    currentVersion: number | undefined;
     onSelect: Dispatch<number>;
+    setIsComparing: Dispatch<boolean>;
 };
 
 export default function NoteVersionsDropDown({
     versions,
     currentVersion,
     onSelect,
+    setIsComparing,
 }: NoteVersionDropDownProps) {
     const [showDropdown, setShowDropdown] = useState(false);
 
     const handleSelect = (versionIdx: number) => {
+        if (versionIdx === currentVersion) return;
         onSelect(versionIdx);
         setShowDropdown(false);
+        setIsComparing(false);
     };
 
     return (
