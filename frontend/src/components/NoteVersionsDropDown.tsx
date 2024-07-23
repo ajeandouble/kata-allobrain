@@ -25,7 +25,9 @@ export default function NoteVersionsDropDown({
                 onMouseEnter={() => setShowDropdown(true)}
                 onClick={() => setShowDropdown(!showDropdown)}
             >
-                {showDropdown ? "Versions" : new Date(updateDate).toLocaleString()}
+                {showDropdown && versions.length > 1
+                    ? "Versions"
+                    : new Date(updateDate).toLocaleString()}
             </button>
             {showDropdown && (
                 <ul className="note-version-dropdown__list">

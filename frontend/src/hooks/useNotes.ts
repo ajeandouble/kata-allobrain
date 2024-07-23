@@ -1,4 +1,6 @@
-import { useState, useEffect, useCallback } from "react";
+import {
+    useState, useEffect,
+} from "react";
 
 import { getNote, getAllNotes, getNoteVersions, postNote, patchNote, deleteNote } from "../api/notes";
 import { Note, NotesObj, NoteVersion, PostNoteReq, GetNoteVersionsRes } from "../types/NoteTypes";
@@ -10,56 +12,57 @@ export const useNotes = () => {
     }>({});
     const [currNoteId, setCurrNoteId] = useState("");
 
-    const fetchNotes = useCallback(async () => {
+    //Les useCallBack ne servaient à rien du tout
+    const fetchNotes = async () => {
         const notes: Note[] = (await getAllNotes()) as Note[];
         if (!notes) return;
         const notesObj = notes.reduce((acc, curr) => ({ ...acc, [curr.id]: curr }), {} as NotesObj);
         setNotes(notesObj);
-    }, []);
+    };
 
-    const fetchNoteVersions = useCallback(
-        async (noteId: string) => {
-            console.log({ notesVersions });
-            if (!notesVersions[noteId]) {
-                const versions: NoteVersion[] = (await getNoteVersions({
-                    params: { id: noteId },
-                })) as NoteVersion[];
-                setNotesVersions((prevVersions) => {
-                    console.log(prevVersions);
-                    return {
-                        ...prevVersions,
-                        [noteId]: versions,
-                    };
-                });
-                console.log("fetchNoteVersions", {
-                    ...notesVersions,
+    const fetchNoteVersions = async (noteId: string) => {
+        console.log({ notesVersions });
+        if (!notesVersions[noteId]) {
+            const versions: NoteVersion[] = (await getNoteVersions({
+                params: { id: noteId },
+            })) as NoteVersion[];
+
+            setNotesVersions((prevVersions) => {
+                console.log(prevVersions);
+                return {
+                    ...prevVersions,
                     [noteId]: versions,
-                });
-            }
-        },
-        []
-    );
+                };
+            });
 
-    const fetchNoteAndVersions = useCallback(async (noteId: string) => {
-        try {
-            const note = await getNote({ params: { id: noteId } });
-            if (note) {
-                setNotes(prevNotes => ({ ...prevNotes, [noteId]: note }));
-                setCurrNoteId(noteId);
-                await fetchNoteVersions(noteId);
-            }
-            return note;
-        } catch (error) {
-            console.error("Error fetching note and versions:", error);
-            return null;
+            console.log("fetchNoteVersions", {
+                ...notesVersions,
+                [noteId]: versions,
+            });
         }
-    }, [fetchNoteVersions]);
+    };
+
+
+    // const fetchNoteAndVersions = async (noteId: string) => {
+    //     try {
+    //         const note = await getNote({ params: { id: noteId } });
+    //         if (note) {
+    //             setNotes(prevNotes => ({ ...prevNotes, [noteId]: note }));
+    //             setCurrNoteId(noteId);
+    //             await fetchNoteVersions(noteId);
+    //         }
+    //         return note;
+    //     } catch (error) {
+    //         console.error("Error fetching note and versions:", error);
+    //         return null;
+    //     }
+    // };
 
     useEffect(() => {
         if (currNoteId) {
             fetchNoteVersions(currNoteId);
         }
-    }, [currNoteId, fetchNoteVersions]);
+    }, [fetchNoteVersions, currNoteId]);
 
     const createNote = async (body: PostNoteReq["body"]) => {
         const resNote = await postNote({ body });
@@ -107,10 +110,12 @@ export const useNotes = () => {
                 updated_at: res.updated_at,
             };
             console.log(notesVersions[noteId], noteId);
+
             setNotesVersions((prevVersions) => ({
                 ...prevVersions,
                 [noteId]: [newVersion, ...(prevVersions[noteId] || [])],
             }));
+
             setNotes({ ...notes, [noteId]: { ...newVersion, id: noteId } as Note });
 
             return newVersion;
@@ -140,7 +145,7 @@ export const useNotes = () => {
 
     useEffect(() => {
         fetchNotes();
-    }, [fetchNotes]);
+    }, []);
 
     return {
         currNoteId,
@@ -148,7 +153,6 @@ export const useNotes = () => {
         notes,
         notesVersions,
         fetchNoteVersions,
-        fetchNoteAndVersions,
         createNote,
         addNoteVersion,
         removeNote,

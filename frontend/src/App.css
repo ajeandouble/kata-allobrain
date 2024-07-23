@@ -43,9 +43,16 @@
     padding-top: 2rem;
     background-color: #171717;
     overflow: hidden;
-    transition: flex 0.3s ease, max-width 0.3s ease;
     display: flex;
     flex-direction: column;
+    flex-grow: 1;
+    transition: flex-grow 0.15s ease;
+}
+
+.notes-container__sidebar.hidden {
+    width: 0% !important;
+    /* transition: flex-grow 0.3s; */
+    flex-grow: 0.0000001;
 }
 
 .notes-container__content {
@@ -120,11 +127,27 @@
     z-index: 1000;
 }
 
-.delete-modal button {
+.delete-modal__confirm {
+    margin: 0 10px;
+    border: 2px solid rgb(255, 0, 0);
+    border-radius: 5px;
+    padding: 0.5rem;
+    background-color: rgba(255, 0, 0, 0.1);
+}
+
+.delete-modal__confirm:hover {
+    background-color: rgba(255, 0, 0, 0.25);
+}
+
+.delete-modal__cancel {
     margin: 0 10px;
     border: 1px solid darkgrey;
     border-radius: 5px;
     padding: 0.5rem;
+}
+
+.delete-modal__cancel:hover {
+    background-color: rgba(255, 255, 255, 0.1);
 }
 
 /* Note Editor */
@@ -206,5 +229,4 @@
 
 .note-version-dropdown__list li:hover {
     opacity: 100%;
-    /* font-weight: bolder; */
 }

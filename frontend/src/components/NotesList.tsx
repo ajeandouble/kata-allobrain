@@ -48,8 +48,15 @@ export default function NotesList() {
             {showDeleteModal && (
                 <div className="delete-modal">
                     <p>Are you sure you want to delete this note?</p>
-                    <button onClick={handleConfirmDelete}>Yes, delete</button>
-                    <button onClick={() => setShowDeleteModal(false)}>Cancel</button>
+                    <button className="delete-modal__confirm" onClick={handleConfirmDelete}>
+                        Yes, delete&nbsp;
+                    </button>
+                    <button
+                        className="delete-modal__cancel"
+                        onClick={() => setShowDeleteModal(false)}
+                    >
+                        Cancel
+                    </button>
                 </div>
             )}
         </>

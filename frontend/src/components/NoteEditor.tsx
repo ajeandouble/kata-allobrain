@@ -1,26 +1,18 @@
-import { useState, useRef, useEffect, Dispatch, FocusEventHandler } from "react";
+import { useState, useRef, useEffect, FocusEventHandler } from "react";
 import { EditorState, RichUtils, Modifier, convertToRaw, convertFromRaw } from "draft-js";
 import { Editor, SyntheticKeyboardEvent } from "react-draft-wysiwyg";
 import "react-draft-wysiwyg/dist/react-draft-wysiwyg.css";
-import { Note, NotesObj, NoteVersion, PostNoteReq } from "../types/NoteTypes";
+import { NoteVersion, PostNoteReq } from "../types/NoteTypes";
 import NoteVersionsDropDown from "./NoteVersionsDropDown";
 import { useNotesContext } from "../context/NotesContext";
 const TAB_SIZE = 4;
 
 export default function NoteEditor() {
     const { notes, notesVersions, currNoteId, addNoteVersion } = useNotesContext();
-
     const latestVersion =
         notesVersions && notesVersions[currNoteId] && notesVersions[currNoteId][0];
     const [title, setTitle] = useState(notes[currNoteId]?.title);
-    const [currentVersion, setCurrentVersion] = useState<NoteVersion>({
-        version: 0,
-        title: "Untitled Note",
-        content: "",
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-    });
-
+    const [currentVersion, setCurrentVersion] = useState<NoteVersion | undefined>(undefined);
     const [editorState, setEditorState] = useState<EditorState>(EditorState.createEmpty());
 
     useEffect(() => {
@@ -31,32 +23,25 @@ export default function NoteEditor() {
             setTitle(latestVersion.title);
         } else {
             setEditorState(EditorState.createEmpty());
-            const currentVersionTitle = "Untitled Note";
-            setCurrentVersion({
-                version: 0,
-                title: currentVersionTitle,
-                content: "",
-                created_at: new Date().toISOString(),
-                updated_at: new Date().toISOString(),
-            });
-            setTitle(currentVersionTitle);
         }
     }, [latestVersion, notesVersions, currNoteId]);
 
-    // Focus on title input on new note else focus on "Untitle" title edition
     const editorRef = useRef<Editor>(null);
     const titleInputRef = useRef<HTMLInputElement>(null);
     useEffect(() => {
         if (editorRef.current && latestVersion?.version > 0) {
+            console.log("AAAA", latestVersion);
             editorRef.current.focusEditor();
-        } else if (titleInputRef.current) {
+        } else if (latestVersion && titleInputRef.current) {
+            console.log("BBB", latestVersion);
             titleInputRef.current.focus();
             titleInputRef.current.setSelectionRange(0, titleInputRef.current.value.length);
         }
     }, [latestVersion]);
 
     const onBlur = (_: FocusEventHandler): void => {
-        if (editorRef.current) editorRef.current.focusEditor();
+        if (editorRef.current && latestVersion?.version > 0) editorRef.current.focusEditor();
+        else if (titleInputRef.current) titleInputRef.current.focus();
     };
 
     const onTab = (evt: React.KeyboardEvent) => {
@@ -77,12 +62,14 @@ export default function NoteEditor() {
     };
 
     const handleSave = async () => {
+        if (!title) return;
+
         const rawContent = JSON.stringify(convertToRaw(editorState.getCurrentContent()));
-        if (currentVersion.content === rawContent && currentVersion.title === title) {
+        if (currentVersion?.content === rawContent && currentVersion.title === title) {
             return;
         }
         const body: PostNoteReq["body"] = {
-            title: title || "Untitled Note",
+            title: title,
             content: rawContent,
         };
         const newVersion: NoteVersion | undefined = await addNoteVersion(currNoteId, body);
@@ -111,7 +98,7 @@ export default function NoteEditor() {
             setTitle("Untitled Note");
             return;
         }
-        if (currentVersion.title === title) return;
+        if (currentVersion?.title === title) return;
 
         const rawContent = JSON.stringify(convertToRaw(editorState.getCurrentContent()));
         const body: PostNoteReq["body"] = {
@@ -134,7 +121,7 @@ export default function NoteEditor() {
                     <NoteVersionsDropDown
                         versions={notesVersions[currNoteId]}
                         onSelect={onVersionSelect}
-                        updateDate={currentVersion?.updated_at} // FIXME: not necessary. better design states
+                        updateDate={currentVersion?.updated_at}
                     />
                 </div>
             </div>

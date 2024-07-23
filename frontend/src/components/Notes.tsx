@@ -4,17 +4,10 @@ import NoteEditor from "./NoteEditor";
 import Header from "./Header";
 import { Note } from "../types/NoteTypes";
 import { useNotesContext } from "../context/NotesContext";
+import debounce from "../utils/debounce";
 
 export default function Notes() {
-    const {
-        notes,
-        currNoteId,
-        setCurrNoteId,
-        notesVersions,
-        createNote,
-        addNoteVersion,
-        removeNote,
-    } = useNotesContext();
+    const { currNoteId, setCurrNoteId, createNote } = useNotesContext();
     const [showSidebar, setShowSidebar] = useState(true);
 
     const handleNewNote = async () => {
@@ -36,13 +29,10 @@ export default function Notes() {
                 hidden={!showSidebar}
                 className="notes__sidebar-new-note"
                 src="/new-note.svg"
-                onClick={handleNewNote}
+                onClick={debounce(handleNewNote)}
             ></img>
             <div className="notes-container">
-                <div
-                    className={`notes-container__sidebar${!showSidebar ? " hidden" : ""}`}
-                    style={{ maxWidth: showSidebar ? "100%" : "0%" }}
-                >
+                <div className={`notes-container__sidebar${!showSidebar ? " hidden" : ""}`}>
                     <Header />
                     <NotesList />
                 </div>
