@@ -14,6 +14,186 @@
 				"url": "{{API_URL}}/health"
 			},
 			"response": []
+		},
+		{
+			"name": "CREATE note",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"const jsonData = pm.response.json();",
+							"const version = jsonData.id;",
+							"",
+							"if (id) {",
+							"    pm.environment.set(\"LATEST_NOTE_ID\", id);",
+							"}"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"title\": \"Note1___\"\n}\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": "{{API_URL}}/notes"
+			},
+			"response": []
+		},
+		{
+			"name": "READ note",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"title\": \"ASDasdasd\",\n    \"content\": \"contentcontent\"\n}\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": "{{API_URL}}/notes/{{NOTE_ID}}"
+			},
+			"response": []
+		},
+		{
+			"name": "READ ALL notes",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": "{{API_URL}}/notes/"
+			},
+			"response": []
+		},
+		{
+			"name": "READ ALL notes with LIMIT",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{API_URL}}/notes?limit=2&skip=0",
+					"host": [
+						"{{API_URL}}"
+					],
+					"path": [
+						"notes"
+					],
+					"query": [
+						{
+							"key": "limit",
+							"value": "2"
+						},
+						{
+							"key": "skip",
+							"value": "0"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "UPDATE note",
+			"request": {
+				"method": "PATCH",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"title\": \"ASDasdasadssd\",\n    \"content\": \"contentcontent\"\n}\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": "{{API_URL}}/notes/{{NOTE_ID}}"
+			},
+			"response": []
+		},
+		{
+			"name": "DELETE note",
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"title\": \"ASDasdasadsd\",\n    \"content\": \"contentcontent\"\n}\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": "{{API_URL}}/notes/{{NOTE_ID}}"
+			},
+			"response": []
+		},
+		{
+			"name": "READ all note versions",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"title\": \"ASDasdasadsd\",\n    \"content\": \"contentcontent\"\n}\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": "{{API_URL}}/notes/{{NOTE_ID}}"
+			},
+			"response": []
+		},
+		{
+			"name": "READ latest note version",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"title\": \"ASDasdasadsd\",\n    \"content\": \"contentcontent\"\n}\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": "{{API_URL}}/notes/{{NOTE_ID}}"
+			},
+			"response": []
 		}
 	],
 	"event": [
