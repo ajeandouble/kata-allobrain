@@ -5,8 +5,6 @@ NOTE_TITLE_MIN_LENGTH = 1
 NOTE_TITLE_MAX_LENGTH = 80
 CONTENT_MAX_LENGTH = 65536
 
-# TODO: extend Base Class with created_at, updated_at
-
 
 class PostNoteRequest(BaseModel):
     title: str = Field(min_length=NOTE_TITLE_MIN_LENGTH)

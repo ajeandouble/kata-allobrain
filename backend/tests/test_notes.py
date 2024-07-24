@@ -39,7 +39,6 @@ def setup_database():
 
 
 def test_create_note():
-    print("test_create_note")
     response = client.post("/notes/", json={"title": "Test Note"})
     assert response.status_code == 201
     assert response.json()["title"] == "Test Note"

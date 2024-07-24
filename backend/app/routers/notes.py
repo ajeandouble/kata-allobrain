@@ -13,7 +13,7 @@ from sqlalchemy.dialects.postgresql import UUID
 from ..database import get_db
 from typing import Optional
 from fastapi.responses import JSONResponse
-from uuid import uuid4, UUID
+from uuid import UUID
 
 router = APIRouter()
 
