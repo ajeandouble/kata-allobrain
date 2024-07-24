@@ -24,12 +24,14 @@ services:
       - ./frontend:/app
     env_file:
       - ./backend/.env.production
+    # tty: true
+    # stdin_open: true
 
   db:
     image: postgres:13
     restart: always
     environment:
-      POSTGRES_USER: postgresql
+      POSTGRES_USER: user
       POSTGRES_PASSWORD: pass
       POSTGRES_DB: db
     volumes:

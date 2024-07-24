@@ -16,8 +16,9 @@ async def lifespan(app: FastAPI):
 print("lifespan2")
 app = FastAPI(lifespan=lifespan)
 
+# Should obviously be set-up properly for production
 cors_options = {
-    "allow_origins": ["http://localhost:5173"],
+    "allow_origins": ["*"],
     "allow_credentials": True,
     "allow_methods": ["*"],
     "allow_headers": ["*"],

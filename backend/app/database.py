@@ -11,6 +11,7 @@ import time
 from .config import settings
 
 DATABASE_URL = os.getenv("TEST_DATABASE_URL", settings.database_url)
+print(DATABASE_URL)
 engine = create_engine(settings.database_url)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 session = SessionLocal()

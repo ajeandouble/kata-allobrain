@@ -1,22 +1,19 @@
-FROM node:18
+FROM node:20-slim
 
 ENV VITE_API_URL=http://localhost:8000
 
 WORKDIR /app
 
-# Copy the package.json and yarn.lock/npm package-lock.json files
-COPY package.json pnpm-lock.yaml /app/
+COPY package.json .
 
-RUN npm i -g pnpm
-RUN pnpm install
+RUN npm install
 
-COPY . /app
+RUN npm i -g serve
 
-RUN pnpm run build
+COPY . .
 
-# Expose the port the app runs on
+RUN npm run build
+
 EXPOSE 3000
 
-# Serve the built application using a simple static file server
-RUN yarn global add serve
-CMD ["pnpm", "run", "preview"]
+CMD [ "serve", "-s", "dist" ]

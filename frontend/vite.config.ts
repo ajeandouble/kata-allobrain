@@ -7,4 +7,15 @@ export default defineConfig({
         global: 'window',
     },
     plugins: [react()],
+    preview: {
+        port: 3000,
+        strictPort: true,
+        host: "http://0.0.0.0:3000",
+    },
+    server: {
+        port: 3000,
+        strictPort: true,
+        host: true,
+        origin: "http://0.0.0.0:3000",
+    },
 });
