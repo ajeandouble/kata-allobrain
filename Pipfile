@@ -4,14 +4,9 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-fastapi = "*"
-uvicorn = "*"
-sqlalchemy = "*"
-databases = "*"
-httpx = "*"
+psycopg2 = "*"
 
 [dev-packages]
-pytest = "*"
 
 [requires]
 python_version = "3.12"

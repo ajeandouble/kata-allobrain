@@ -1,38 +1,260 @@
-.App {
-  text-align: center;
+#root {
+    max-width: 1280px;
 }
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
+/* Notes */
+
+.notes-container {
+    display: flex;
+    height: 100vh;
+    width: 100vw;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
+.notes__sidebar-toggle {
+    position: absolute;
+    top: 1vh;
+    left: 1vw;
+    width: 25px;
+    z-index: 1;
+    cursor: pointer;
+    opacity: 80%;
 }
 
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
+.notes__sidebar-toggle:hover {
+    opacity: 100%;
 }
 
-.App-link {
-  color: #61dafb;
+.notes__sidebar-new-note {
+    position: absolute;
+    left: calc(19.5% - 2rem);
+    top: 1vh;
+    width: 22px;
+    z-index: 1;
+    cursor: pointer;
+    opacity: 80%;
 }
 
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+.notes__sidebar-new-note:hover {
+    opacity: 100%;
+}
+
+.notes-container__sidebar {
+    flex: 1;
+    padding-top: 2rem;
+    background-color: #171717;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    transition: flex-grow 0.15s ease;
+}
+
+.notes-container__sidebar.hidden {
+    width: 0% !important;
+    /* transition: flex-grow 0.3s; */
+    flex-grow: 0.0000001;
+}
+
+.notes-container__content {
+    flex: 4;
+}
+
+/* Notes Header */
+
+.notes-header {
+    padding-top: 0rem;
+    text-align: center;
+    font-weight: bold;
+}
+
+/* Notes Lists */
+
+.notes-list {
+    padding: 0 1rem 0 1rem;
+    margin-top: 1.5rem;
+    overflow-y: auto;
+}
+
+.notes-list__item {
+    position: relative;
+    left: -1.5rem;
+    list-style: none;
+    margin-bottom: 1.25rem;
+    text-overflow: ellipsis;
+    overflow-x: hidden;
+    cursor: pointer;
+    opacity: 90%;
+}
+
+.notes-list__item span.selected {
+    font-weight: bolder;
+    border-radius: 0.25rem;
+}
+
+.notes-list__item:hover {
+    opacity: 100%;
+}
+
+.notes-list__delete-icon {
+    color: rgb(177, 22, 22);
+    background-color: none;
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    opacity: 0;
+    transition: opacity 0.2s ease-in-out;
+    width: 22px;
+    cursor: pointer;
+}
+
+.notes-list__item:hover .notes-list__delete-icon {
+    opacity: 1;
+}
+
+/* Note List - Delete Modal */
+
+.delete-modal {
+    position: fixed;
+    top: 40%;
+    left: 55%;
+    transform: translate(-50%, -50%);
+    background-color: rgba(200, 200, 200, 0.05);
+    padding: 20px;
+    border: 1px solid grey;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+}
+
+.delete-modal__confirm {
+    margin: 0 10px;
+    border: 2px solid rgb(255, 0, 0);
+    border-radius: 5px;
+    padding: 0.5rem;
+    background-color: rgba(255, 0, 0, 0.1);
+}
+
+.delete-modal__confirm:hover {
+    background-color: rgba(255, 0, 0, 0.25);
+}
+
+.delete-modal__cancel {
+    margin: 0 10px;
+    border: 1px solid darkgrey;
+    border-radius: 5px;
+    padding: 0.5rem;
+}
+
+.delete-modal__cancel:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Note Editor */
+
+/*
+.note-editor {
+}
+
+.note-editor__header {
+} */
+
+.note-editor__header__versions button {
+    font-weight: 300;
+    color: #424242;
+}
+.note-editor__header__versions button:hover {
+    color: #696969;
+    transition-duration: 100ms;
+}
+
+/*
+.note-editor__header__save button {
+}
+
+.note-editor__header__save button {
+} */
+
+.note-editor__title input {
+    position: relative;
+    left: 3rem;
+    font-size: 1.5em; /* Same size as h2 */
+    font-weight: bold;
+    border: none;
+    outline: none;
+    background: transparent;
+    display: inline-block;
+}
+
+.note-editor__content {
+    margin: 1.5rem;
+    padding: 2rem;
+}
+
+/* Versions Dropdown */
+
+.note-version-dropdown {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+}
+
+.note-version-dropdown button {
+    margin-bottom: 10px;
+}
+
+.note-version-dropdown__list {
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    z-index: 1000; /* Ensures the dropdown is on top */
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    background-color: rgba(36, 36, 36, 0.99);
+    /* width: 200px; Adjust width as needed */
+    text-align: left;
+    max-height: 20vh;
+    overflow-y: scroll;
+}
+
+.note-version-dropdown__list li {
+    padding: 10px;
+    cursor: pointer;
+    opacity: 60%;
+    transition: opacity 0.2s ease;
+}
+
+.note-version-dropdown__list li:hover {
+    opacity: 100%;
+}
+
+/* Latest Version - Older Version comparaison */
+
+.note-editor__compare-button {
+    padding: 0.3rem 0.6rem;
+    float: right;
+    position: relative;
+    right: 2rem;
+    top: 1rem;
+    background-color: rgb(76, 175, 80, 0.8);
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.note-editor__compare-close {
+    padding: 0.3rem 0.6rem;
+    right: 2rem;
+    top: 1rem;
+    background-color: rgba(190, 119, 119, 0.8);
+    color: white;
+    border: none;
+    border-radius: 2px;
+    cursor: pointer;
 }
