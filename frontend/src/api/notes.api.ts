@@ -6,12 +6,8 @@ const API_URL = import.meta.env.VITE_API_URL;
 async function getNote() { }
 
 async function getAllNotes(): Promise<GetNoteRes[] | undefined> {
-    try {
-        const data: GetAllNotesRes = await ky.get(`${API_URL}/notes/`).json();
-        return data;
-    } catch (err) {
-        console.error(err);
-    }
+    const data: GetAllNotesRes = await ky.get(`${API_URL}/notes/`).json();
+    return data;
 }
 
 async function postNote(props: PostNoteReq): Promise<PostNoteRes | undefined> {
