@@ -1,5 +1,5 @@
 // eslint-disable-next-line @typescript-eslint/ban-types
-export function throttle<T extends Function>(mainFunction: T, delay = 1000) {
+export function throttle<T extends Function>(callback: T, delay = 1000) {
     let timerFlag: ReturnType<typeof setTimeout> | null = null;
 
     return function (this: unknown, ...args: unknown[]) {
@@ -7,11 +7,30 @@ export function throttle<T extends Function>(mainFunction: T, delay = 1000) {
         const context = this;
 
         if (timerFlag === null) {
-            mainFunction.apply(context, args);
+            callback.apply(context, args);
             timerFlag = setTimeout(() => {
                 timerFlag = null;
                 clearTimeout;
             }, delay);
+        }
+    };
+}
+
+// eslint-disable-next-line @typescript-eslint/ban-types
+export function debounce<T extends Function>(callback: T, delay = 1000) {
+    let timerFlag: ReturnType<typeof setTimeout> | null = null;
+
+    return function (this: unknown, ...args: unknown[]) {
+        // eslint-disable-next-line @typescript-eslint/no-this-alias
+        const context = this;
+
+        if (timerFlag === null) {
+            timerFlag = setTimeout(() => {
+                callback.apply(context, args);
+                timerFlag = null;
+                clearTimeout(timerFlag);
+            }, delay);
+
         }
     };
 }

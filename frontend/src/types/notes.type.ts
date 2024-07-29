@@ -19,6 +19,10 @@ type NoteVersion = {
     updated_at: string
 }
 
+type NotesVersions = NoteVersion[];
+
+type NotesVersionsObj = Record<string, NoteVersion>
+
 // Request Types
 
 type GetNoteRes = {
@@ -84,7 +88,7 @@ type GetAllNoteVersionsRes = GetNoteVersionRes[]
 
 // TODO: PatchNoteVersion Res
 export type {
-    Note, NotesObj, NoteVersion,
+    Note, NotesObj, NoteVersion, NotesVersions, NotesVersionsObj,
     PostNoteReq, PostNoteRes,
     GetNoteRes, GetAllNotesRes,
     PatchNoteReq, PatchNoteRes,

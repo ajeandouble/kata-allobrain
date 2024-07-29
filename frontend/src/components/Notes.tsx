@@ -1,58 +1,42 @@
-// import { useState, useCallback } from "react";
-// import NotesList from "./NotesList";
-// import NoteEditor from "./NoteEditor";
-// import { Note } from "../types/notes.type";
-// import { useNotesContext } from "../context/NotesContext";
-// import { throttle } from "../utils";
-// import { createMachine, assign } from "xstate";
-import { useContext } from "react";
-import NotesReactContext from "../context/NotesContext";
 import NotesList from "./NotesList";
+import { debounce as debounceFunc } from "../utils/";
+import { useState, useCallback } from "react";
+import { notesActor } from "../states/globalService";
+import { useSelector } from "@xstate/react";
+import NoteEditor from "./NoteEditor";
 
 export default function Notes() {
-    // const [showSidebar, setShowSidebar] = useState(true);
+    const [showSidePanel, setShowSidePanel] = useState(true);
+    // const debounceSidePanel = useCallback(
+    //     debounceFunc(() => setShowSidePanel((prev) => !prev), 0),
+    //     []
+    // );
 
-    // const handleNewNote = async () => {
-    //     const newNote: Note | undefined = await createNote({
-    //         title: "Untitled Note",
-    //         content: "",
-    //     });
-    //     if (newNote) setCurrNoteId(newNote.id);
-    // };
-
-    // const onNewNoteClick = useCallback(throttle(handleNewNote, 1000), []);
-
-    const [state, send] = useContext(NotesReactContext);
+    const stateValue = useSelector(notesActor, (st) => st.value);
 
     return (
         <div className="notes">
             <img
                 className="notes__sidebar-toggle"
                 src="/burger-menu.svg"
-                onClick={() => send({ type: "TOGGLE_PANEL" })}
+                onClick={() => setShowSidePanel((prev) => !prev)}
             ></img>
             <img
-                hidden={state.context.isLeftPanelCollapsed}
+                hidden={!showSidePanel}
                 className="notes__sidebar-new-note"
                 src="/new-note.svg"
-                // eslint-disable-next-line react-hooks/exhaustive-deps
-                // onClick={onNewNoteClick}
             ></img>
             <div className="notes-container">
-                <div
-                    className={`notes-container__sidebar${
-                        state.context.isLeftPanelCollapsed ? " hidden" : ""
-                    }`}
-                >
+                <div className={`notes-container__sidebar${showSidePanel ? "" : " hidden"}`}>
                     <div className="notes-header">
                         <h3>Notes</h3>
                     </div>
                     <NotesList />
                 </div>
                 <div className="notes-container__content">
-                    Editor
-                    {/* {!!currNoteId && notesVersions[currNoteId] && <NoteEditor />} */}
+                    {stateValue === "editing" && <NoteEditor />}
                 </div>
+                <pre>{String(stateValue)}</pre>
             </div>
         </div>
     );

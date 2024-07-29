@@ -51,8 +51,8 @@
 
 .notes-container__sidebar.hidden {
     width: 0% !important;
-    /* transition: flex-grow 0.3s; */
-    flex-grow: 0.0000001;
+    transition: flex-grow 0.3s;
+    flex-grow: 0.00000001;
 }
 
 .notes-container__content {
@@ -89,6 +89,7 @@
 .notes-list__item span.selected {
     font-weight: bolder;
     border-radius: 0.25rem;
+    /* background-color: yellow; */
 }
 
 .notes-list__item:hover {
