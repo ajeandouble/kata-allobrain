@@ -9,8 +9,8 @@ export interface NotesContext {
     notes: NotesObj;
     notesVersions: NotesVersionsObj;
     selectedNoteVersion: number,
-    selectedNoteContent: string,
-    selectedNoteTitle: string
+    selectedNoteVersionContent: string,
+    updatedNoteContent: string
 }
 
 export type NotesEvent =
@@ -18,8 +18,8 @@ export type NotesEvent =
     | { type: "CLOSE_NOTE" }
     | { type: "ADD_NOTE" }
     | { type: "DELETE_NOTE" }
-    | { type: "ADD_NOTE_VERSION" }
-    | { type: "UPDATE_NOTE_TITLE" };
+    | { type: "UPDATE_NOTE_TITLE" }
+    | { type: "ADD_NOTE_VERSION" };
 
 const notesMachine = setup({
     types: {
@@ -35,10 +35,12 @@ const notesMachine = setup({
             if (id in notesVersions) return notesVersions[id];
             return (await getAllNoteVersions({ params: { id } })) as NoteVersion[];
         }),
-        updateNoteTitle: fromPromise(async ({ input }) => {
-            const { selectedNoteId: id, selectedNoteTitle: title } = input as { selectedNoteId: string, selectedNoteTitle: string };
-            throw new Error('fuck');
-            return (await patchNote({ params: { id }, body: { title } }));
+        patchNote: fromPromise(async ({ input }) => {
+            const { selectedNoteId: id, selectedNoteTitle: title, selectedNoteContent: content }
+                = input as { selectedNoteId: string, selectedNoteTitle: string, selectedNoteContent: string };
+            const data = await patchNote({ params: { id }, body: { title, content } });
+            console.log(data);
+            return data;
         })
     }
 }).createMachine<NotesContext, NotesEvent>({
@@ -51,8 +53,8 @@ const notesMachine = setup({
         notesVersions: {},
         selectedNoteVersion: null,
         selectedNoteContent: "",
-        selectedNoteTitle: ""
-        // TODO: title?
+        selectedNoteTitle: "",
+        updatedNoteContent: ""
     },
     states: {
         loading: {
@@ -112,7 +114,8 @@ const notesMachine = setup({
                         selectedNoteId: null,
                         selectedNoteContent: "",
                         selectNoteVersion: null,
-                        selectedNoteTitle: ""
+                        selectedNoteTitle: "",
+                        updatedNoteContent: ""
                     }),
                 },
                 SELECT_NOTE: {
@@ -126,34 +129,38 @@ const notesMachine = setup({
                 idle: {
                     on: {
                         UPDATE_NOTE_TITLE: {
-                            target: "updatingNoteTitle",
+                            target: "updatingNote",
                             actions: assign({ selectedNoteTitle: ({ event }) => event.title })
+                        },
+                        ADD_NOTE_VERSION: {
+                            target: "updatingNote",
+                            actions: assign({ updatedNoteContent: ({ event }) => event.content })
                         },
                     },
                 },
-                updatingNoteTitle: {
+                updatingNote: {
                     invoke: {
-                        id: "updateNoteTitle",
-                        src: "updateNoteTitle",
-                        input: ({ context: { selectedNoteId, selectedNoteTitle } }) =>
-                            ({ selectedNoteId, selectedNoteTitle }),
+                        id: "updateNote",
+                        src: "patchNote",
+                        input: ({ context: { selectedNoteId, selectedNoteTitle, updatedNoteContent } }) =>
+                            ({ selectedNoteId, selectedNoteTitle, updatedNoteContent }),
                         onDone: {
                             target: "idle", actions: assign({
-                                selectedNoteTitle: ({ event: { output } }) => output,
+                                selectedNoteTitle: ({ event: { output: { title } } }) => title,
                                 notes: ({ context, event: { output } }) =>
                                     ({ ...context.notes, [context.selectedNoteId]: output })
                             })
                         },
                         onError: {
+                            target: "idle",
                             actions: assign({
                                 selectedNoteTitle: ({ context }) => context.notes[context.selectedNoteId].title
                             })
                         }
                     },
                 },
-                noteTitleUpdated: {
-                    type: "final"
-                }
+                updatingNoteTitleFailure: {},
+                updatingNoteVersions: {},
             }
         }
     }
