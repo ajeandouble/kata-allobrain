@@ -51,22 +51,27 @@ async def read_note(id: UUID, db: Session = Depends(get_db)):
     return note
 
 
-@router.patch("/{id}", response_model=PatchNoteResponse | GetNoteResponse)
+@router.patch("/{id}", response_model=PatchNoteResponse, status_code=200)
 async def update_note(id: UUID, body: PatchNoteRequest, db: Session = Depends(get_db)):
     note = db.query(NoteModel).filter(NoteModel.id == id).first()
     if note is None:
         raise HTTPException(status_code=404, detail="Note not found")
 
+    if (not body.title or body.title == note.title) and not body.content:
+        return note
+
     if body.title:
         note.title = body.title
 
-    latest_version = int(note.latest_version) + 1
-    note.latest_version = latest_version
+    if body.content:
+        latest_version = int(note.latest_version) + 1
+        note.latest_version = latest_version
 
-    new_version = NoteVersionModel(
-        note_id=note.id, content=body.content, version=latest_version
-    )
-    db.add(new_version)
+        new_version = NoteVersionModel(
+            note_id=note.id, content=body.content, version=latest_version
+        )
+        db.add(new_version)
+
     db.commit()
 
     return note

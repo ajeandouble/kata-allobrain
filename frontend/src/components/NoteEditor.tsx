@@ -16,11 +16,40 @@ import ComparisonEditor from "./ComparisonEditor";
 const TAB_SIZE = 4;
 import React from "react";
 import { diffWords } from "diff";
+import { useSelector } from "@xstate/react";
+import { notesActor } from "../states/globalService";
+import { NoteVersions } from "../types/notes.type";
 
 // TODO: move Comparison component
 
 export default function NoteEditor() {
     console.log(NoteEditor.name);
+    const selectedNoteId = useSelector(notesActor, (state) => state.context.selectedNoteId);
+    const inputTitleRef = useRef();
+    const selectedNoteTitle = useSelector(notesActor, (state) => state.context.selectedNoteTitle);
+    const [title, setTitle] = useState(selectedNoteTitle);
+
+    useEffect(() => {
+        console.log("use Effect");
+        setTitle(selectedNoteTitle);
+    }, [selectedNoteTitle]);
+
+    const selectedNoteVersion = useSelector(
+        notesActor,
+        (state) => state.context.selectedNoteVersion
+    );
+    const allNotesVersions: NoteVersions[] = useSelector(
+        notesActor,
+        (state) => state.context.notesVersions
+    );
+    const notes = useSelector(notesActor, (state) => state.context.notes);
+    const notesVersions = allNotesVersions[selectedNoteId];
+    // useEffect(() => {
+    //     if (noteVersions.length &&
+    //     setTitle(notes[nte
+    // }, [notes, notesVersions]);
+    // const [title, setTitle] = useState(notes[notesVersions[selectedNoteVersion]].title);
+
     // const { notes, notesVersions, currNoteId, addNoteVersion } = useNotesContext();
     // const [currVersion, setCurrVersion] = useState<number | undefined>(undefined);
     // const [editorState, setEditorState] = useState<EditorState>(EditorState.createEmpty());
@@ -163,16 +192,12 @@ export default function NoteEditor() {
     // };
 
     // // @ts-ignore
-    // const onInputKeyDown = (evt: React.KeyboardEventHandler<HTMLInputElement>) => {
-    //     if ("key" in evt && evt.key === "Enter") {
-    //         if (title.length === 0) {
-    //             setTitle("Untitled Note");
-    //         } else if (editorRef?.current) {
-    //             editorRef.current.focusEditor();
-    //         }
-    //     }
-    // };
-
+    const onInputKeyDown = (evt: React.SyntheticEvent<InputEvent>) => {
+        // TODO: check good typescript typing
+        if ("key" in evt && evt.key === "Enter" && evt.target.value) {
+            notesActor.send({ type: "UPDATE_NOTE_TITLE", title: evt.target.value });
+        }
+    };
     return (
         <div className="note-editor">
             <div className="note-editor__header">
@@ -195,12 +220,18 @@ export default function NoteEditor() {
                 </div>
             </div>{" "}
             <h2 className="note-editor__title">
+                {/* <form> */}
                 <input
-                // value={title}
-                // onChange={(evt) => setTitle(evt.target.value)}
-                // @ts-ignore
-                // onKeyDown={onInputKeyDown}
+                    ref={inputTitleRef}
+                    defaultValue={selectedNoteTitle}
+                    value={title}
+                    onChange={(evt) => setTitle(evt.target.value)}
+                    // onKeyDown={onInputKeyDown}
+                    // onChange={(evt) => setTitle(evt.target.value)}
+                    // @ts-ignore
+                    onKeyDown={onInputKeyDown}
                 ></input>
+                {/* </form> */}
             </h2>
             <div className="note-editor__content" onKeyDown={onKeyDownSave}>
                 {/* {isComparing && comparisonEditorState ? (

@@ -43,8 +43,10 @@ async function deleteNote(props: DeleteNoteVersionReq) {
 async function getAllNoteVersions(props: GetNoteVersionsReq): Promise<GetAllNoteVersionsRes | undefined> {
     const { id } = props.params;
     try {
-        const data = await ky.get(`${API_URL}/notes/${id}/versions`).json();
-        return data as GetAllNoteVersionsRes;
+        const data = await ky.get(`${API_URL}/notes/${id}/versions`).json() as GetAllNoteVersionsRes;
+        if (!(data?.length > 0))
+            throw new Error("Can't fetch note versions");
+        return data;
     } catch (err) {
         console.error(err);
     }

@@ -12,10 +12,12 @@ export default function Notes() {
     //     []
     // );
 
-    const stateValue = useSelector(notesActor, (st) => st.value);
-
+    const state = useSelector(notesActor, (state) => state);
+    console.log(state.value);
+    console.log(state.context);
     return (
         <div className="notes">
+            <pre>{JSON.stringify(state, null, 2)}</pre>
             <img
                 className="notes__sidebar-toggle"
                 src="/burger-menu.svg"
@@ -34,9 +36,9 @@ export default function Notes() {
                     <NotesList />
                 </div>
                 <div className="notes-container__content">
-                    {stateValue === "editing" && <NoteEditor />}
+                    {state.matches("editing") && <NoteEditor />}
                 </div>
-                <pre>{String(stateValue)}</pre>
+                <pre>{JSON.stringify(state.value)}</pre>
             </div>
         </div>
     );

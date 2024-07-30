@@ -1,5 +1,15 @@
 # Allo Brain Kata
 
+## TODO xstate
+
+- [ ] Title upload and go on with state changes
+  - [ ] Verify if there are not better patterns
+- [ ] Content upload
+- [ ] Note creation
+- [ ] Note comparison
+- [ ] Rollback mechanisms and opportunistic requests
+- [ ] Improve ui and add save button
+
 Technical test for Allo Brain
 
 ## Install and run locally

@@ -21,7 +21,7 @@ type NoteVersion = {
 
 type NotesVersions = NoteVersion[];
 
-type NotesVersionsObj = Record<string, NoteVersion>
+type NotesVersionsObj = Record<string, NoteVersion[]>
 
 // Request Types
 
@@ -52,8 +52,8 @@ type PostNoteRes = {
 type PatchNoteReq = {
     params: { id: string },
     body: {
-        title: string,
-        content: string,
+        title?: string,
+        content?: string,
     },
 }
 

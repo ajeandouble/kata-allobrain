@@ -1,28 +1,6 @@
 import { setup, assign, fromPromise, createActor } from "xstate";
 import { Note, NotesObj, NotesVersionsObj, NoteVersion } from "../types/notes.type";
-import { getAllNotes, getAllNoteVersions } from "../api/notes.api";
-
-/* Editor Machine */
-const editorMachine = setup({
-
-}).createMachine({
-    id: "editorMachine",
-    initial: "editing",
-    context: {
-        content: "",
-    },
-    states: {
-        editing: {
-            invoke: {
-                src: (input) => { console.log(input); return input; },
-                onDone: { actions: (a) => console.log(a) }
-            }
-        }
-    }
-});
-
-const editorActor = createActor(editorMachine).start();
-
+import { getAllNotes, getAllNoteVersions, patchNote } from "../api/notes.api";
 
 /* Notes Machine */
 
@@ -30,11 +8,18 @@ export interface NotesContext {
     selectedNoteId: string | undefined;
     notes: NotesObj;
     notesVersions: NotesVersionsObj;
+    selectedNoteVersion: number,
+    selectedNoteContent: string,
+    selectedNoteTitle: string
 }
 
 export type NotesEvent =
     | { type: "SELECT_NOTE"; id: string }
-    | { type: "CLOSE_NOTE" };
+    | { type: "CLOSE_NOTE" }
+    | { type: "ADD_NOTE" }
+    | { type: "DELETE_NOTE" }
+    | { type: "ADD_NOTE_VERSION" }
+    | { type: "UPDATE_NOTE_TITLE" };
 
 const notesMachine = setup({
     types: {
@@ -46,18 +31,28 @@ const notesMachine = setup({
             return (notes as Note[]).reduce((acc, curr) => ({ ...acc, [curr.id]: curr }), {} as NotesObj);
         }),
         getNoteVersions: fromPromise(async ({ input }) => {
-            const { selectedNoteId: id } = input as { selectedNoteId: string };
+            const { selectedNoteId: id, notesVersions } = input as { selectedNoteId: string, notesVersions: NotesVersionsObj };
+            if (id in notesVersions) return notesVersions[id];
             return (await getAllNoteVersions({ params: { id } })) as NoteVersion[];
+        }),
+        updateNoteTitle: fromPromise(async ({ input }) => {
+            const { selectedNoteId: id, selectedNoteTitle: title } = input as { selectedNoteId: string, selectedNoteTitle: string };
+            throw new Error('fuck');
+            return (await patchNote({ params: { id }, body: { title } }));
         })
-    },
+    }
 }).createMachine<NotesContext, NotesEvent>({
-    /** @xstate-layout N4IgpgJg5mDOIC5QDsD2AXOBZAhgYwAsBLZMAOgBtUcISoBiCVUskgN1QGtyAzMdQgEEKFAHIY4AbQAMAXUSgADqlhF0RZgpAAPRADYArACYyB6QHYAHAYDMlm0aMBGACw2ANCACeiJzYOmRjYuLgCcVg4uTqFGAL6xnmiYsLiEJORUNHT0YABOuai5ZIoUOOg8hQC2ZHwCBMJiErAy8kggyqrqmm26CC7SoaYGLuZOlubG5uahep4+CJZOZGGhq0YGY1N+evGJTanELJm0yFDiyQBiOEQUAK65YPQASgCiACpPAJotWh1qGsgtL0jFEyEZFuDwTY7NI7HNfKDQk49HpzOtzP1pCEDLsQElsPhDuQiBAKI8AMovAAyLwAwm8APqiADybxePzafy6gJ6iFC0LI5lh0TWhkclnhCEcg0sAyRBgVTmk4x2CTx+0J6Uo1BOZwkADU8qpmLBGMxicgONwavxCOcwIbcsbkM05L8VP9uqBevybILhasYmLwZKNpZBXobFiXEY9NI9C5LLj8SlNUcdXR7Y7nabaVTmZSmaz2W7OR7uUC+aEAgqRgmonp+a5JX4-f5UdYDKsVQZVXtkgctZB-qd6HmCy8i2yOUpywDKwgxaYLNY7A5nG5JeKyOFDJZHE4psMbMmNWkWMP1KPKTT6VOS61Z5157zF8Zl1ZbPYD5vvIgbOYfq2AmsrGCiTYuPEapoBAcBaCmg6kO6z5ejoiAALSzH+CCYWQ0j4QRhEEc4p4DmmGQZqcyGejy3r-u+MwDI2ljVoG5gtsEeEEX4vZRPYkakQS54UVkpz2rAVw3PcYDURWr4xi2MbLMioywuENiRk4OLQWeRKsKSMllihtFoQsLgBEYAYsfGCY2E4W7mWCwrWCCu5RIJqbCdqol6pg2YAvARk0QuTiHnoQx1pYLh6LGsYeNhiaDAYLGJrWZi2HEOlkV5l50LJL50X09jLOZwRCliCrOJKAHhdIfhYlGhihFFmXxEAA */
+    /** @xstate-layout N4IgpgJg5mDOIC5QDsD2AXOBZAhgYwAsBLZMAOgBtUcISoBiCVUskgN1QGtyAzMdQgEEKFAHIY4AbQAMAXUSgADqlhF0RZgpAAPRADY9AJjIBWaQHYAHIfPmTlqwE4AjABoQAT0TOAzCdOGPgAsPnYAvmHuaJiwuIQk5FQ0dPRgAE5pqGlkihQ46DxZALZkfAIEwmISsDLySCDKquqa9boIQdKOpiZB5tI29k7Seu5eCJbOphFR1XHELEm0yFDiMQBiOEQUAK5pYPQASgCiACoHAJq1Wo1qGshabYZBk4YThnomhoOWjsOj3s8yC4DCY9EFHM8OkZpiBoth8PNyEQIBR9gBlI4AGSOAGETgB9UQAeRORyu9RuzXurUQEJ8ZD6PmcHS+Dh+bk8iEMhi6lk6lg+TJMdk+MLhsQRCUo1CWKwkADV0qpmLBGMwkcgONxSvxCKswIq0srkDU5NcVLcWqA2nSGdImSzvi5-ggTM5LAyjI5fkKRc4xbNJQsZXR9YbjaqcZiiRjCSSyWaKRaqQ9vNJpP4TD0+gM2c7OQhfPS-HpbNJLD5K1X-ZFYYH4ixILdlvQozGjnHSeSlMm7qmEAZjGYrDY7HmOWNuR7HOZBc5HNYgoZ3ZYAzE5lKm+oWxjsXjOwm6j2mn2aQOjKYLNZbE6J4hQvSTD4wTYJsKs4YIrW0BA4FpxRupDmieVo6IgAC0IwFpBa7wg2iQhsswGWtS1r3p8QJ6J0nxjkMUFjL4QSwRK8HSskyz6rAGxbLsYDISmZ5Li6zLGM8IJghCzLDJ+371oirAonRSYgahYHjFmZCGPaXGsk4d4IE8-hST4nRBEEi7LpYq68euQYIeRcqYOGdzwMJKH9s4zizt0vT9LhPwus+9JBF6PrOO+oo6XB-FbnQ9GnmhrohGQlnmFJuZyS6T7GM+QQfm+fpfmEQA */
     id: "notesMachine",
     initial: "loading",
     context: {
-        selectedNoteId: undefined,
         notes: {},
-        notesVersions: {}
+        selectedNoteId: null,
+        notesVersions: {},
+        selectedNoteVersion: null,
+        selectedNoteContent: "",
+        selectedNoteTitle: ""
+        // TODO: title?
     },
     states: {
         loading: {
@@ -74,6 +69,7 @@ const notesMachine = setup({
         },
         loadingNotesFailure: { on: { RETRY: "loading" } },
         idle: {
+            entry: assign({ content: () => "" }),
             on: {
                 SELECT_NOTE: {
                     target: "loadingNoteVersions",
@@ -85,10 +81,15 @@ const notesMachine = setup({
             invoke: {
                 id: "fetchNoteVersions",
                 src: "getNoteVersions",
-                input: ({ context: { selectedNoteId } }) => ({ selectedNoteId }),
+                input: ({ context: { selectedNoteId, notesVersions } }) => ({ selectedNoteId, notesVersions }),
                 onDone: {
-                    target: "editing", actions: assign({ notesVersions: ({ event: { output } }) => output })
+                    target: "editing", actions: assign({
+                        notesVersions: ({ context, event: { output } }) =>
+                            ({ ...context.notesVersions, [context.selectedNoteId]: output })
+                    })
                 },
+                onError: {
+                }
             },
             on: {
                 CLOSE_NOTE: {
@@ -98,28 +99,67 @@ const notesMachine = setup({
             }
         },
         editing: {
-            // invoke: {
-            //     id: "editorMachine",
-            //     src: editorMachine,
-            //     input: ({ context: { selectedNoteId, notesVersions } }) => ({ noteVersions: notesVersions[selectedNoteId] }),
-            // },
+            initial: "idle",
+            entry: assign({
+                selectedNoteContent: ({ event: { output } }) => output[0].content,
+                selectedNoteVersion: 0,
+                selectedNoteTitle: ({ context }) => context.notes[context.selectedNoteId].title
+            }),
             on: {
                 CLOSE_NOTE: {
                     target: "idle",
                     actions: assign({
                         selectedNoteId: null,
+                        selectedNoteContent: "",
+                        selectNoteVersion: null,
+                        selectedNoteTitle: ""
                     }),
                 },
                 SELECT_NOTE: {
                     target: "loadingNoteVersions",
-                    actions: assign({ selectedNoteId: ({ event }) => event.id })
+                    actions: assign({ selectedNoteId: ({ event }) => event.id }),
+                    guard: ({ event, context }) => event.id !== context.selectedNoteId
                 },
             },
+            states: {
+                initial: "idle",
+                idle: {
+                    on: {
+                        UPDATE_NOTE_TITLE: {
+                            target: "updatingNoteTitle",
+                            actions: assign({ selectedNoteTitle: ({ event }) => event.title })
+                        },
+                    },
+                },
+                updatingNoteTitle: {
+                    invoke: {
+                        id: "updateNoteTitle",
+                        src: "updateNoteTitle",
+                        input: ({ context: { selectedNoteId, selectedNoteTitle } }) =>
+                            ({ selectedNoteId, selectedNoteTitle }),
+                        onDone: {
+                            target: "idle", actions: assign({
+                                selectedNoteTitle: ({ event: { output } }) => output,
+                                notes: ({ context, event: { output } }) =>
+                                    ({ ...context.notes, [context.selectedNoteId]: output })
+                            })
+                        },
+                        onError: {
+                            actions: assign({
+                                selectedNoteTitle: ({ context }) => context.notes[context.selectedNoteId].title
+                            })
+                        }
+                    },
+                },
+                noteTitleUpdated: {
+                    type: "final"
+                }
+            }
         }
-    },
+    }
 });
 
 
 const notesActor = createActor(notesMachine).start();
 
-export { notesActor, editorActor };
+export { notesActor };
