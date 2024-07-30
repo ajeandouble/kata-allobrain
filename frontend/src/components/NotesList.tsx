@@ -4,7 +4,7 @@ import { notesActor } from "../states/globalService";
 import { useSelector } from "@xstate/react";
 
 export default function NotesList() {
-    console.log("rerender", NotesList.name);
+    console.log(NotesList.name);
 
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [noteToDeleteId, setNoteToDeleteId] = useState("");
@@ -45,13 +45,6 @@ export default function NotesList() {
 
     return (
         <>
-            {/* <pre style={{ position: "fixed", color: "red" }}>
-                {JSON.stringify(
-                    { selectedNoteId: selectedNoteId ? selectedNoteId : "----", notes },
-                    null,
-                    2
-                )}
-            </pre> */}
             <div className="notes-list">
                 <ul className="notes-list__list">
                     {Object.values(notes).map((n) => (

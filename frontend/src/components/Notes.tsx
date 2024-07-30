@@ -12,6 +12,10 @@ export default function Notes() {
     //     []
     // );
 
+    const handleCreateNote = () => {
+        notesActor.send({ type: "ADD_NOTE" });
+    };
+
     const state = useSelector(notesActor, (state) => state);
     console.log(state.value);
     console.log(state.context);
@@ -27,6 +31,7 @@ export default function Notes() {
                 hidden={!showSidePanel}
                 className="notes__sidebar-new-note"
                 src="/new-note.svg"
+                onClick={handleCreateNote}
             ></img>
             <div className="notes-container">
                 <div className={`notes-container__sidebar${showSidePanel ? "" : " hidden"}`}>

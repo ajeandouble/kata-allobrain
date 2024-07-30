@@ -1,6 +1,5 @@
 import { useState, Dispatch } from "react";
 import { NoteVersion } from "../types/notes.type";
-
 type NoteVersionDropDownProps = {
     versions: NoteVersion[];
     currentVersion: number | undefined;
@@ -8,12 +7,7 @@ type NoteVersionDropDownProps = {
     setIsComparing: Dispatch<boolean>;
 };
 
-export default function NoteVersionsDropDown({
-    versions,
-    currentVersion,
-    onSelect,
-    setIsComparing,
-}: NoteVersionDropDownProps) {
+export default function NoteVersionsDropDown() {
     const [showDropdown, setShowDropdown] = useState(false);
 
     const handleSelect = (versionIdx: number) => {

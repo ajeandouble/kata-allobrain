@@ -24,10 +24,20 @@ import { NoteVersions } from "../types/notes.type";
 
 export default function NoteEditor() {
     console.log(NoteEditor.name);
-    const selectedNoteId = useSelector(notesActor, (state) => state.context.selectedNoteId);
     const inputTitleRef = useRef();
     const selectedNoteTitle = useSelector(notesActor, (state) => state.context.selectedNoteTitle);
     const [title, setTitle] = useState(selectedNoteTitle);
+    const selectedNoteVersionContent = useSelector(
+        notesActor,
+        (state) => state.context.selectedNoteVersionContent
+    );
+    console.log({ selectedNoteVersionContent });
+    const [editorState, setEditorState] = useState(
+        selectedNoteVersionContent
+            ? EditorState.createWithContent(convertFromRaw(JSON.parse(selectedNoteVersionContent)))
+            : EditorState.createEmpty()
+    );
+    const editorRef = useRef();
 
     useEffect(() => {
         console.log("use Effect");
@@ -38,12 +48,13 @@ export default function NoteEditor() {
         notesActor,
         (state) => state.context.selectedNoteVersion
     );
-    const allNotesVersions: NoteVersions[] = useSelector(
-        notesActor,
-        (state) => state.context.notesVersions
-    );
-    const notes = useSelector(notesActor, (state) => state.context.notes);
-    const notesVersions = allNotesVersions[selectedNoteId];
+    // const allNotesVersions: NoteVersions[] = useSelector(
+    //     notesActor,
+    //     (state) => state.context.notesVersions
+    // );
+    // // const notes = useSelector(notesActor, (state) => state.context.notes);
+    // const notesVersions = allNotesVersions[selectedNoteId];
+
     // useEffect(() => {
     //     if (noteVersions.length &&
     //     setTitle(notes[nte
@@ -177,7 +188,9 @@ export default function NoteEditor() {
     const onKeyDownSave = (evt: React.KeyboardEvent<HTMLDivElement>) => {
         if ((evt.metaKey || evt.ctrlKey) && evt.keyCode === 83) {
             evt.preventDefault();
-            // handleSave();
+            const content = JSON.stringify(convertToRaw(editorState.getCurrentContent()));
+            console.log("onKeyDownSave", { content });
+            notesActor.send({ type: "ADD_NOTE_VERSION", content });
         }
     };
 
@@ -207,8 +220,8 @@ export default function NoteEditor() {
                         currentVersion={currVersion}
                         onSelect={onVersionSelect}
                         setIsComparing={setIsComparing}
-                    />
-                    {currVersion !== undefined && currVersion !== 0 && (
+                    /> */}
+                    {/* {currVersion !== undefined && currVersion !== 0 && (
                         <button
                             className="note-editor__compare-button"
                             onClick={handleCompareVersions}
@@ -241,11 +254,11 @@ export default function NoteEditor() {
                     />
                 ) : */}
                 <Editor
-                    // ref={editorRef}
-                    // editorState={editorState}
-                    // onEditorStateChange={(newEditorState) => {
-                    // if (currVersion === 0) setEditorState(newEditorState);
-                    // }}
+                    ref={editorRef}
+                    editorState={editorState}
+                    onEditorStateChange={(newEditorState) =>
+                        selectedNoteVersion === 0 && setEditorState(newEditorState)
+                    }
                     wrapperClassName="wrapper-class"
                     editorClassName="editor-class"
                     toolbarHidden={true}

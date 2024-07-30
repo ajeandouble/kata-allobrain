@@ -37,7 +37,7 @@ type GetAllNotesRes = GetNoteRes[]
 type PostNoteReq = {
     body: {
         title: string,
-        content: string
+        content?: string
     }
 }
 
