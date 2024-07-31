@@ -25,11 +25,11 @@ import { NoteVersions } from "../types/notes.type";
 export default function NoteEditor() {
     console.log(NoteEditor.name);
     const inputTitleRef = useRef();
-    const notesVersions = useSelector(notesActor, (state) => state.context.notesVersions);
-    const selectedNoteId = useSelector(notesActor, (state) => state.context.selectedNoteId);
-    const selectedNoteTitle = useSelector(notesActor, (state) => state.context.selectedNoteTitle);
+    const notesVersions = useSelector(notesActor, (st) => st.context.notesVersions);
+    const selectedNoteId = useSelector(notesActor, (st) => st.context.selectedNoteId);
+    const selectedNoteTitle = useSelector(notesActor, (st) => st.context.selectedNoteTitle);
     const [title, setTitle] = useState(selectedNoteTitle);
-    const draftContent = useSelector(notesActor, (state) => state.context.draftContent);
+    const draftContent = useSelector(notesActor, (st) => st.context.draftContent);
     console.log({ draftContent });
     const [editorState, setEditorState] = useState(
         draftContent
@@ -37,6 +37,9 @@ export default function NoteEditor() {
             : EditorState.createEmpty()
     );
     const editorRef = useRef();
+    const isviewingPreviousVersion = useSelector(notesActor, (st) =>
+        st.matches("showingEditor.viewingPreviousVersion")
+    );
 
     const selectedNoteVersion = useSelector(
         notesActor,
@@ -171,18 +174,28 @@ export default function NoteEditor() {
         <div className="note-editor">
             <div className="note-editor__header">
                 <div className="note-editor__header__versions">
+                    <pre>{JSON.stringify({ isviewingPreviousVersion }, null, 2)}</pre>
                     <NoteVersionsDropDown
                         handlePreviousVersionSelect={handlePreviousVersionSelect}
                     />
-                    {/* {state.matches("viewingHistory") && (
+                    {isviewingPreviousVersion && (
+                        <button
+                            className="note-editor__close-history-button"
+                            // onClick={handleCompareVersions}
+                            hidden={!isviewingPreviousVersion}
+                        >
+                            Close history
+                        </button>
+                    )}
+                    {isviewingPreviousVersion && (
                         <button
                             className="note-editor__compare-button"
                             // onClick={handleCompareVersions}
-                            // hidden={e}
+                            hidden={!isviewingPreviousVersion}
                         >
                             Compare with latest version
                         </button>
-                    )} */}
+                    )}
                 </div>
             </div>{" "}
             <h2 className="note-editor__title">

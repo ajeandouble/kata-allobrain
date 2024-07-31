@@ -156,7 +156,7 @@ const notesMachine = setup({
                             // TODO: add guard in case of no delta
                         },
                         SELECT_PREVIOUS_VERSION: {
-                            target: "viewingPreviousNote",
+                            target: "viewingPreviousVersion",
                             actions: assign({
                                 selectedNoteVersion: ({ event }) => event.version,
                                 draftContent: ({ event }) => event.draftContent
@@ -164,7 +164,7 @@ const notesMachine = setup({
                         }
                     }
                 },
-                viewingPreviousNote: {
+                viewingPreviousVersion: {
                     on: {
                         SELECT_DRAFT: {
                             target: "editing",

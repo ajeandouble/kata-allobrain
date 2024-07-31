@@ -16,9 +16,9 @@ export default function Notes() {
         notesActor.send({ type: "ADD_NOTE" });
     };
 
+    const isShowingEditor = useSelector(notesActor, (state) => state.matches("showingEditor"));
     const state = useSelector(notesActor, (state) => state);
     console.log(state.value);
-    console.log(state.context);
     return (
         <div className="notes">
             <pre>{JSON.stringify(state, null, 2)}</pre>
@@ -40,9 +40,7 @@ export default function Notes() {
                     </div>
                     <NotesList />
                 </div>
-                <div className="notes-container__content">
-                    {state.matches("showingEditor") && <NoteEditor />}
-                </div>
+                <div className="notes-container__content">{isShowingEditor && <NoteEditor />}</div>
                 <pre>{JSON.stringify(state.value)}</pre>
             </div>
         </div>
