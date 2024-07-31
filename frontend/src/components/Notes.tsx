@@ -18,7 +18,6 @@ export default function Notes() {
 
     const isShowingEditor = useSelector(notesActor, (state) => state.matches("showingEditor"));
     const state = useSelector(notesActor, (state) => state);
-    console.log(state.value);
     return (
         <div className="notes">
             <pre>{JSON.stringify(state, null, 2)}</pre>

@@ -236,12 +236,15 @@
 
 /* Latest Version - Older Version comparaison */
 
-.note-editor__close-history-button {
-    padding: 0.3rem 0.6rem;
+.note-editor__view-previous-note {
     float: right;
     position: relative;
-    right: 1rem;
+    right: 0rem;
     top: 1rem;
+}
+
+.note-editor__view-previous-note__close-history-button {
+    padding: 0.3rem 0.6rem;
     background-color: rgba(175, 76, 76, 0.8);
     color: rgb(0, 0, 0) !important;
     border-radius: 4px;
@@ -249,26 +252,25 @@
     border-right: 1rem;
 }
 
-.note-editor__close-history-button:hover {
+.note-editor__view-previous-note__close-history-button:hover {
     color: white !important;
 }
 
-.note-editor__compare-button {
+.note-editor__view-previous-note__compare-button {
     padding: 0.3rem 0.6rem;
-    float: right;
     position: relative;
-    right: 2rem;
-    top: 1rem;
+    left: 1rem;
     background-color: rgb(76, 175, 80, 0.8);
     color: white;
     border-radius: 4px;
     cursor: pointer;
 }
-.note-editor__compare-button:hover {
+
+.note-editor__view-previous-note__compare-button:hover {
     color: white !important;
 }
 
-.note-editor__compare-close {
+.note-editor__view-previous-note__compare-close {
     padding: 0.3rem 0.6rem;
     right: 2rem;
     top: 1rem;

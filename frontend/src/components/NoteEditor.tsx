@@ -170,6 +170,12 @@ export default function NoteEditor() {
         });
     };
 
+    const onCloseHistoryClick = () => {
+        notesActor.send({ type: "SELECT_DRAFT" });
+    };
+
+    const onCompareVersionsClick = () => {};
+
     return (
         <div className="note-editor">
             <div className="note-editor__header">
@@ -178,24 +184,26 @@ export default function NoteEditor() {
                     <NoteVersionsDropDown
                         handlePreviousVersionSelect={handlePreviousVersionSelect}
                     />
-                    {isviewingPreviousVersion && (
-                        <button
-                            className="note-editor__close-history-button"
-                            // onClick={handleCompareVersions}
-                            hidden={!isviewingPreviousVersion}
-                        >
-                            Close history
-                        </button>
-                    )}
-                    {isviewingPreviousVersion && (
-                        <button
-                            className="note-editor__compare-button"
-                            // onClick={handleCompareVersions}
-                            hidden={!isviewingPreviousVersion}
-                        >
-                            Compare with latest version
-                        </button>
-                    )}
+                    <div className="note-editor__view-previous-note">
+                        {isviewingPreviousVersion && (
+                            <button
+                                className="note-editor__view-previous-note__close-history-button"
+                                onClick={onCloseHistoryClick}
+                                hidden={!isviewingPreviousVersion}
+                            >
+                                Close history
+                            </button>
+                        )}
+                        {isviewingPreviousVersion && (
+                            <button
+                                className="note-editor__view-previous-note__compare-button"
+                                onClick={onCompareVersionsClick}
+                                hidden={!isviewingPreviousVersion}
+                            >
+                                Compare with latest version
+                            </button>
+                        )}
+                    </div>
                 </div>
             </div>{" "}
             <h2 className="note-editor__title">
