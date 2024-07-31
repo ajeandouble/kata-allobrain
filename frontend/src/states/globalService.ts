@@ -131,6 +131,9 @@ const notesMachine = setup({
                     actions: assign({ selectedNoteId: ({ event }) => event.id }),
                     guard: ({ event, context }) => event.id !== context.selectedNoteId
                 },
+                ADD_NOTE: {
+                    target: "addingNote"
+                },
                 CLOSE_NOTE: {
                     target: "idle",
                     actions: assign({
@@ -165,6 +168,20 @@ const notesMachine = setup({
                     }
                 },
                 viewingPreviousVersion: {
+                    on: {
+                        SELECT_DRAFT: {
+                            target: "editing",
+                            actions: assign({ selectedNoteVersion: 0 })
+                        },
+                        SELECT_PREVIOUS_VERSION: {
+                            actions: assign({ selectedNoteVersion: ({ event }) => event.version }),
+                        },
+                        COMPARE_PREVIOUS_VERSION: {
+                            target: "comparingPreviousVersion"
+                        }
+                    }
+                },
+                comparingPreviousVersion: {
                     on: {
                         SELECT_DRAFT: {
                             target: "editing",

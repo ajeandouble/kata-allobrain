@@ -37,14 +37,14 @@ export default function NoteEditor() {
             : EditorState.createEmpty()
     );
     const editorRef = useRef();
-    const isviewingPreviousVersion = useSelector(notesActor, (st) =>
+    const isViewingPrevVersion = useSelector(notesActor, (st) =>
         st.matches("showingEditor.viewingPreviousVersion")
     );
-
-    const selectedNoteVersion = useSelector(
-        notesActor,
-        (state) => state.context.selectedNoteVersion
+    const isComparingPrevVersion = useSelector(notesActor, (st) =>
+        st.matches("showingEditor.comparingPreviousVersion")
     );
+
+    const selectedNoteVersion = useSelector(notesActor, (st) => st.context.selectedNoteVersion);
     useEffect(() => {
         setTitle(selectedNoteTitle);
     }, [selectedNoteTitle]);
@@ -64,65 +64,6 @@ export default function NoteEditor() {
     // const [title, setTitle] = useState("");
     // const [isComparing, setIsComparing] = useState(false);
     // const [comparisonEditorState, setComparisonEditorState] = useState<EditorState | null>(null);
-
-    // const handleCompareVersions = () => {
-    //     if (isComparing) {
-    //         setIsComparing(false);
-    //         return;
-    //     }
-    //     if (currVersion !== undefined && currVersion !== 0) {
-    //         const currentContent = JSON.parse(notesVersions[currNoteId][currVersion].content)
-    //             .blocks[0].text;
-    //         const latestContent = JSON.parse(notesVersions[currNoteId][0].content).blocks[0].text;
-
-    //         const differences = diffWords(currentContent, latestContent);
-
-    //         let comparisonText = "";
-    //         const decorations: { start: number; end: number; style: string }[] = [];
-
-    //         differences.forEach((part) => {
-    //             const start = comparisonText.length;
-    //             comparisonText += part.value;
-    //             const end = comparisonText.length;
-
-    //             if (part.added) {
-    //                 decorations.push({
-    //                     start,
-    //                     end,
-    //                     style: "HIGHLIGHT_ADDED",
-    //                 });
-    //             } else if (part.removed) {
-    //                 decorations.push({
-    //                     start,
-    //                     end,
-    //                     style: "HIGHLIGHT_REMOVED",
-    //                 });
-    //             }
-    //         });
-
-    //         let comparisonState = EditorState.createWithContent(
-    //             ContentState.createFromText(comparisonText)
-    //         );
-
-    //         decorations.forEach((decoration) => {
-    //             comparisonState = EditorState.push(
-    //                 comparisonState,
-    //                 Modifier.applyInlineStyle(
-    //                     comparisonState.getCurrentContent(),
-    //                     comparisonState.getSelection().merge({
-    //                         anchorOffset: decoration.start,
-    //                         focusOffset: decoration.end,
-    //                     }),
-    //                     decoration.style
-    //                 ),
-    //                 "change-inline-style"
-    //             );
-    //         });
-
-    //         setComparisonEditorState(comparisonState);
-    //         setIsComparing(true);
-    //     }
-    // };
 
     // const editorRef = useRef<Editor>(null);
 
@@ -170,40 +111,41 @@ export default function NoteEditor() {
         });
     };
 
-    const onCloseHistoryClick = () => {
-        notesActor.send({ type: "SELECT_DRAFT" });
-    };
-
-    const onCompareVersionsClick = () => {};
+    const onCloseHistoryClick = () => notesActor.send({ type: "SELECT_DRAFT" });
+    const onCompareVersionClick = () => notesActor.send({ type: "COMPARE_PREVIOUS_VERSION" });
 
     return (
         <div className="note-editor">
             <div className="note-editor__header">
                 <div className="note-editor__header__versions">
-                    <pre>{JSON.stringify({ isviewingPreviousVersion }, null, 2)}</pre>
+                    <pre>
+                        {JSON.stringify(
+                            { isviewingPreviousVersion: isViewingPrevVersion },
+                            null,
+                            2
+                        )}
+                    </pre>
                     <NoteVersionsDropDown
                         handlePreviousVersionSelect={handlePreviousVersionSelect}
                     />
-                    <div className="note-editor__view-previous-note">
-                        {isviewingPreviousVersion && (
+                    {(isViewingPrevVersion || isComparingPrevVersion) && (
+                        <div className="note-editor__view-previous-note">
                             <button
                                 className="note-editor__view-previous-note__close-history-button"
                                 onClick={onCloseHistoryClick}
-                                hidden={!isviewingPreviousVersion}
                             >
                                 Close history
                             </button>
-                        )}
-                        {isviewingPreviousVersion && (
-                            <button
-                                className="note-editor__view-previous-note__compare-button"
-                                onClick={onCompareVersionsClick}
-                                hidden={!isviewingPreviousVersion}
-                            >
-                                Compare with latest version
-                            </button>
-                        )}
-                    </div>
+                            {!isComparingPrevVersion && (
+                                <button
+                                    className="note-editor__view-previous-note__compare-button"
+                                    onClick={onCompareVersionClick}
+                                >
+                                    Compare with latest version
+                                </button>
+                            )}
+                        </div>
+                    )}
                 </div>
             </div>{" "}
             <h2 className="note-editor__title">
@@ -220,24 +162,22 @@ export default function NoteEditor() {
                 {/* </form> */}
             </h2>
             <div className="note-editor__content" onKeyDown={onKeyDownSave}>
-                {/* {isComparing && comparisonEditorState ? (
-                    <ComparisonEditor
-                        setIsComparing={setIsComparing}
-                        comparisonEditorState={comparisonEditorState}
+                {isComparingPrevVersion ? (
+                    <ComparisonEditor />
+                ) : (
+                    <Editor
+                        ref={editorRef}
+                        editorState={editorState}
+                        onEditorStateChange={(newEditorState) =>
+                            selectedNoteVersion === 0 && setEditorState(newEditorState)
+                        }
+                        wrapperClassName="wrapper-class"
+                        editorClassName="editor-class"
+                        toolbarHidden={true}
+                        onTab={onTab}
+                        // handleReturn={handleReturn}
                     />
-                ) : */}
-                <Editor
-                    ref={editorRef}
-                    editorState={editorState}
-                    onEditorStateChange={(newEditorState) =>
-                        selectedNoteVersion === 0 && setEditorState(newEditorState)
-                    }
-                    wrapperClassName="wrapper-class"
-                    editorClassName="editor-class"
-                    toolbarHidden={true}
-                    onTab={onTab}
-                    // handleReturn={handleReturn}
-                />
+                )}
             </div>
         </div>
     );
