@@ -25,41 +25,35 @@ import { NoteVersions } from "../types/notes.type";
 export default function NoteEditor() {
     console.log(NoteEditor.name);
     const inputTitleRef = useRef();
+    const notesVersions = useSelector(notesActor, (state) => state.context.notesVersions);
+    const selectedNoteId = useSelector(notesActor, (state) => state.context.selectedNoteId);
     const selectedNoteTitle = useSelector(notesActor, (state) => state.context.selectedNoteTitle);
     const [title, setTitle] = useState(selectedNoteTitle);
-    const selectedNoteVersionContent = useSelector(
-        notesActor,
-        (state) => state.context.selectedNoteVersionContent
-    );
-    console.log({ selectedNoteVersionContent });
+    const draftContent = useSelector(notesActor, (state) => state.context.draftContent);
+    console.log({ draftContent });
     const [editorState, setEditorState] = useState(
-        selectedNoteVersionContent
-            ? EditorState.createWithContent(convertFromRaw(JSON.parse(selectedNoteVersionContent)))
+        draftContent
+            ? EditorState.createWithContent(convertFromRaw(JSON.parse(draftContent)))
             : EditorState.createEmpty()
     );
     const editorRef = useRef();
-
-    useEffect(() => {
-        console.log("use Effect");
-        setTitle(selectedNoteTitle);
-    }, [selectedNoteTitle]);
 
     const selectedNoteVersion = useSelector(
         notesActor,
         (state) => state.context.selectedNoteVersion
     );
-    // const allNotesVersions: NoteVersions[] = useSelector(
-    //     notesActor,
-    //     (state) => state.context.notesVersions
-    // );
-    // // const notes = useSelector(notesActor, (state) => state.context.notes);
-    // const notesVersions = allNotesVersions[selectedNoteId];
+    useEffect(() => {
+        setTitle(selectedNoteTitle);
+    }, [selectedNoteTitle]);
 
-    // useEffect(() => {
-    //     if (noteVersions.length &&
-    //     setTitle(notes[nte
-    // }, [notes, notesVersions]);
-    // const [title, setTitle] = useState(notes[notesVersions[selectedNoteVersion]].title);
+    useEffect(() => {
+        const prevRawContent = notesVersions[selectedNoteId][selectedNoteVersion].content;
+        if (prevRawContent) {
+            setEditorState(
+                EditorState.createWithContent(convertFromRaw(JSON.parse(prevRawContent)))
+            );
+        }
+    }, [selectedNoteVersion]);
 
     // const { notes, notesVersions, currNoteId, addNoteVersion } = useNotesContext();
     // const [currVersion, setCurrVersion] = useState<number | undefined>(undefined);
@@ -127,62 +121,23 @@ export default function NoteEditor() {
     //     }
     // };
 
-    // useEffect(() => {
-    //     const versionsLength = notesVersions[currNoteId].length;
-    //     if (versionsLength) {
-    //         setCurrVersion(0);
-    //         const content = notesVersions[currNoteId][0].content;
-    //         if (content) {
-    //             const rawContent = JSON.parse(content);
-    //             setEditorState(EditorState.createWithContent(convertFromRaw(rawContent)));
-    //         } else {
-    //             setEditorState(EditorState.createEmpty());
-    //         }
-    //         setTitle(notes[currNoteId].title);
-    //     }
-    //     if (editorRef.current) editorRef.current.focusEditor();
-    // }, [notes, notesVersions, currNoteId]);
-
     // const editorRef = useRef<Editor>(null);
 
-    // const onTab = (evt: React.KeyboardEvent) => {
-    //     evt.preventDefault();
-    //     const currentState = editorState;
-    //     const newState = Modifier.replaceText(
-    //         currentState.getCurrentContent(),
-    //         currentState.getSelection(),
-    //         Array(TAB_SIZE).fill(" ").join("")
-    //     );
-    //     setEditorState(EditorState.push(currentState, newState, "insert-characters"));
-    // };
+    const onTab = (evt: React.KeyboardEvent) => {
+        evt.preventDefault();
+        const currentState = editorState;
+        const newState = Modifier.replaceText(
+            currentState.getCurrentContent(),
+            currentState.getSelection(),
+            Array(TAB_SIZE).fill(" ").join("")
+        );
+        setEditorState(EditorState.push(currentState, newState, "insert-characters"));
+    };
 
     // // eslint-disable-next-line @typescript-eslint/no-unused-vars
     // const handleReturn = (_: SyntheticKeyboardEvent): boolean => {
     //     setEditorState(RichUtils.insertSoftNewline(editorState));
     //     return true;
-    // };
-
-    // const handleSave = async () => {
-    //     if (!title || currVersion === undefined) return;
-    //     const rawContent = JSON.stringify(convertToRaw(editorState.getCurrentContent()));
-    //     if (
-    //         currVersion &&
-    //         notesVersions[currNoteId][currVersion].content === rawContent &&
-    //         notesVersions[currNoteId][currVersion].title === title
-    //     ) {
-    //         return;
-    //     }
-    //     const body: PostNoteReq["body"] = {
-    //         title: title,
-    //         content: rawContent,
-    //     };
-    //     const updatedNote: [PatchNoteRes, GetNoteVersionRes] | undefined = await addNoteVersion(
-    //         currNoteId,
-    //         body
-    //     );
-    //     if (updatedNote) {
-    //         setCurrVersion(0);
-    //     }
     // };
 
     const onKeyDownSave = (evt: React.KeyboardEvent<HTMLDivElement>) => {
@@ -194,38 +149,36 @@ export default function NoteEditor() {
         }
     };
 
-    // const onVersionSelect = (versionIdx: number) => {
-    //     const content = notesVersions[currNoteId][versionIdx].content;
-    //     setEditorState(
-    //         content
-    //             ? EditorState.createWithContent(convertFromRaw(JSON.parse(content)))
-    //             : EditorState.createEmpty()
-    //     );
-    //     setCurrVersion(versionIdx);
-    // };
-
-    // // @ts-ignore
     const onInputKeyDown = (evt: React.SyntheticEvent<InputEvent>) => {
         // TODO: check good typescript typing
         if ("key" in evt && evt.key === "Enter" && evt.target.value) {
             notesActor.send({ type: "UPDATE_NOTE_TITLE", title: evt.target.value });
         }
     };
+
+    const handlePreviousVersionSelect = (version: number) => {
+        if (version === selectedNoteVersion) return; // FIXME: guarded already in state machine
+        const draftContent = JSON.stringify(convertToRaw(editorState.getCurrentContent()));
+        console.log("notesActor.send", draftContent);
+        notesActor.send({
+            type: "SELECT_PREVIOUS_VERSION",
+            version,
+            draftContent,
+        });
+    };
+
     return (
         <div className="note-editor">
             <div className="note-editor__header">
                 <div className="note-editor__header__versions">
-                    {/* <NoteVersionsDropDown
-                        versions={notesVersions[currNoteId]}
-                        currentVersion={currVersion}
-                        onSelect={onVersionSelect}
-                        setIsComparing={setIsComparing}
-                    /> */}
-                    {/* {currVersion !== undefined && currVersion !== 0 && (
+                    <NoteVersionsDropDown
+                        handlePreviousVersionSelect={handlePreviousVersionSelect}
+                    />
+                    {/* {state.matches("viewingHistory") && (
                         <button
                             className="note-editor__compare-button"
-                            onClick={handleCompareVersions}
-                            hidden={isComparing}
+                            // onClick={handleCompareVersions}
+                            // hidden={e}
                         >
                             Compare with latest version
                         </button>
@@ -233,7 +186,6 @@ export default function NoteEditor() {
                 </div>
             </div>{" "}
             <h2 className="note-editor__title">
-                {/* <form> */}
                 <input
                     ref={inputTitleRef}
                     defaultValue={selectedNoteTitle}
@@ -262,7 +214,7 @@ export default function NoteEditor() {
                     wrapperClassName="wrapper-class"
                     editorClassName="editor-class"
                     toolbarHidden={true}
-                    // onTab={onTab}
+                    onTab={onTab}
                     // handleReturn={handleReturn}
                 />
             </div>

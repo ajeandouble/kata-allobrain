@@ -41,7 +41,7 @@ export default function Notes() {
                     <NotesList />
                 </div>
                 <div className="notes-container__content">
-                    {state.matches("editing") && <NoteEditor />}
+                    {state.matches("showingEditor") && <NoteEditor />}
                 </div>
                 <pre>{JSON.stringify(state.value)}</pre>
             </div>

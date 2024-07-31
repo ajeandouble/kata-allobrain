@@ -2,10 +2,13 @@
 
 ## TODO xstate
 
-- [ ] Title upload and go on with state changes
-  - [ ] Verify if there are not better patterns
-- [ ] Content upload
-- [ ] Note creation
+- [x] Title upload and go on with state changes
+  - [.] Verify if there are not better patterns
+- [x] Content upload
+- [x] Note creation
+- [.] Note history
+  - [x] On going back to previous note send `SELECT_PREVIOUS_VERSION` which saves editor content into `draftContent`
+  - [x] Clear out `draftContent` on _editing_ state
 - [ ] Note comparison
 - [ ] Rollback mechanisms and opportunistic requests
 - [ ] Improve ui and add save button
