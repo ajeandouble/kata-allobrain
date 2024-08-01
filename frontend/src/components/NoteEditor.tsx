@@ -11,14 +11,12 @@ import { useSelector } from "@xstate/react";
 const TAB_SIZE = 4;
 
 export default function NoteEditor() {
-    console.log(NoteEditor.name);
     const inputTitleRef = useRef();
     const notesVersions = useSelector(notesActor, (st) => st.context.notesVersions);
     const selectedNoteId = useSelector(notesActor, (st) => st.context.selectedNoteId);
     const selectedNoteTitle = useSelector(notesActor, (st) => st.context.selectedNoteTitle);
     const [title, setTitle] = useState(selectedNoteTitle);
     const draftContent = useSelector(notesActor, (st) => st.context.draftContent);
-    console.log({ draftContent });
     const [editorState, setEditorState] = useState(
         draftContent
             ? EditorState.createWithContent(convertFromRaw(JSON.parse(draftContent)))
@@ -74,7 +72,6 @@ export default function NoteEditor() {
         if ((evt.metaKey || evt.ctrlKey) && evt.keyCode === 83) {
             evt.preventDefault();
             const content = JSON.stringify(convertToRaw(editorState.getCurrentContent()));
-            console.log("onKeyDownSave", { content });
             notesActor.send({ type: "ADD_NOTE_VERSION", content });
         }
     };
@@ -90,7 +87,6 @@ export default function NoteEditor() {
         if (version === selectedNoteVersion) return;
 
         const draftContent = JSON.stringify(convertToRaw(editorState.getCurrentContent()));
-        console.log("notesActor.send", draftContent);
         notesActor.send({
             type: "SELECT_PREVIOUS_VERSION",
             version,

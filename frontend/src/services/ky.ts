@@ -20,15 +20,11 @@ const cachedKy = ky.extend({
             async (request, _options, response) => {
                 if (response.ok) {
                     const cacheKey = new URL(request.url).pathname;
-                    console.log(cacheKey);
                     const data = await response.json();
-                    console.log(notesVersionsCache);
                     if (["POST", "PUT", "PATCH", "DELETE"].includes(request.method.toUpperCase())) {
                         const match = cacheKey.match(urlPattern);
                         if (match && match.groups && match.groups.id) {
                             const noteId = match.groups.id;
-                            console.log(noteId);
-                            console.log(`Invalidating cache for note ID: ${noteId}`);
                             notesVersionsCache.delete(`/notes/${noteId}`);
                             notesVersionsCache.delete(`/notes/${noteId}/versions`);
                         }

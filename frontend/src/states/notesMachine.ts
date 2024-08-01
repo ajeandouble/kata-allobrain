@@ -1,6 +1,7 @@
 import { setup, assign, fromPromise, createActor } from "xstate";
-import { Note, NotesObj, NotesVersionsObj, NoteVersion } from "../types/notes.type";
+import { NotesObj, NotesVersionsObj, NoteVersion } from "../types/notes.type";
 import { deleteNote, getAllNotes, getAllNoteVersions, patchNote, postNote } from "../api/notes.api";
+import { notify, notifySuccess, notifyError, ERROR_MSG as ERROR_MSGS } from "../services/toast";
 
 /* Notes Machine */
 
@@ -8,10 +9,10 @@ export interface NotesContext {
     selectedNoteId: string | undefined;
     notes: NotesObj;
     notesVersions: NotesVersionsObj;
-    selectedNoteVersion: number,
-    selectedNoteTitle: string
-    draftContent: string
-    noteToDeleteId: string
+    selectedNoteVersion: number;
+    selectedNoteTitle: string;
+    draftContent: string;
+    noteToDeleteId: string;
 }
 
 // TODO: Use `as const` "enum"
@@ -19,42 +20,63 @@ export type NotesEvent =
     | { type: "SELECT_NOTE"; id: string }
     | { type: "CLOSE_NOTE" }
     | { type: "ADD_NOTE" }
-    | { type: "DELETE_NOTE", id: string }
-    | { type: "UPDATE_NOTE_TITLE", title: string }
-    | { type: "ADD_NOTE_VERSION", content?: string, title?: string }
-    | { type: "SELECT_PREVIOUS_VERSION", version: number, draftContent: string }
+    | { type: "DELETE_NOTE"; id: string }
+    | { type: "UPDATE_NOTE_TITLE"; title: string }
+    | { type: "ADD_NOTE_VERSION"; content?: string; title?: string }
+    | { type: "SELECT_PREVIOUS_VERSION"; version: number; draftContent: string }
     | { type: "SELECT_DRAFT" }
     | { type: "COMPARE_PREVIOUS_VERSION" };
 
 const notesMachine = setup({
     types: {
         context: {} as NotesContext,
-        events: {} as NotesEvent
+        events: {} as NotesEvent,
     },
     actors: {
         getAllNotes: fromPromise(async () => {
             const notes = (await getAllNotes()) as Note[];
-            return (notes as Note[]).reduce((acc, curr) => ({ ...acc, [curr.id]: curr }), {} as NotesObj);
+            return (notes as Note[]).reduce(
+                (acc, curr) => ({ ...acc, [curr.id]: curr }),
+                {} as NotesObj
+            );
         }),
-        getNoteVersions: fromPromise(async ({ input }) => {
-            console.log('getNoteVersions');
-            const { selectedNoteId: id } = input as { selectedNoteId: string };
-            return (await getAllNoteVersions({ params: { id } })) as NoteVersion[];
+        getNoteVersions: fromPromise(async () => {
+            return new Promise((_, reject) => {
+                setTimeout(() => {
+                    reject(new Error("Failed to fetch notes"));
+                }, 500); // 0.5 second delay to simulate async error
+            });
         }),
         postNote: fromPromise(async () => {
-            return (await postNote({ body: { title: "Untitled Note" } }));
+            return await postNote({ body: { title: "Untitled Note" } });
         }),
         patchNote: fromPromise(async ({ input }) => {
-            const { selectedNoteId: id, selectedNoteTitle: title, draftContent: content }
-                = input as { selectedNoteId: string, selectedNoteTitle: string, draftContent: string };
+            const {
+                selectedNoteId: id,
+                selectedNoteTitle: title,
+                draftContent: content,
+            } = input as {
+                selectedNoteId: string;
+                selectedNoteTitle: string;
+                draftContent: string;
+            };
             return await patchNote({ params: { id }, body: { title, content } });
         }),
         deleteNote: fromPromise(async ({ input }) => {
-            console.log("deleteNote yoyoyoyo");
             const { noteToDeleteId: id } = input as { noteToDeleteId: string };
             return await deleteNote({ params: { id } });
-        })
-    }
+        }),
+    },
+    actions: {
+        notify: (_, params) => {
+            console.log("notify", _);
+            if (params.options) {
+                notify(params.msg, params.options);
+            } else {
+                notify(params.msg);
+            }
+        },
+    },
 }).createMachine({
     id: "notesMachine",
     initial: "loading",
@@ -65,7 +87,7 @@ const notesMachine = setup({
         selectedNoteVersion: null,
         selectedNoteTitle: "",
         draftContent: "",
-        noteToDeleteId: null
+        noteToDeleteId: null,
     },
     states: {
         loading: {
@@ -73,27 +95,30 @@ const notesMachine = setup({
                 id: "fetchAllNotes",
                 src: "getAllNotes",
                 onDone: {
-                    target: "idle", actions: assign({ notes: ({ event: { output } }) => output })
+                    target: "idle",
+                    actions: assign({ notes: ({ event: { output } }) => output }),
                 },
                 onError: {
-
+                    target: "loadingFailure",
+                    actions: () => notifyError(ERROR_MSGS.LOADING_NOTE),
                 },
             },
         },
+        loadingFailure: { after: { 3000: { target: "loading" } } },
         idle: {
             on: {
                 SELECT_NOTE: {
                     target: "loadingNoteVersions",
-                    actions: assign({ selectedNoteId: ({ event }) => event.id })
+                    actions: assign({ selectedNoteId: ({ event }) => event.id }),
                 },
                 ADD_NOTE: {
-                    target: "addingNote"
+                    target: "addingNote",
                 },
                 DELETE_NOTE: {
                     target: "deletingNote",
-                    actions: assign({ noteToDeleteId: ({ event }) => event.id })
-                }
-            }
+                    actions: assign({ noteToDeleteId: ({ event }) => event.id }),
+                },
+            },
         },
         addingNote: {
             invoke: {
@@ -102,30 +127,45 @@ const notesMachine = setup({
                 onDone: {
                     target: "loadingNoteVersions",
                     actions: assign({
-                        notes: ({ context, event: { output } }) => ({ [output.id]: output, ...context.notes }),
+                        notes: ({ context, event: { output } }) => ({
+                            [output.id]: output,
+                            ...context.notes,
+                        }),
                         selectedNoteId: ({ event: { output } }) => output.id,
                         selectedNoteVersion: ({ event: { output } }) => output.latest_version,
                         draftContent: ({ event: { output } }) => output.content,
-                        selectedNoteTitle: ({ event: { output } }) => output.title
-                    })
+                        selectedNoteTitle: ({ event: { output } }) => output.title,
+                    }),
                 },
-                onError: {}
+                onError: {
+                    target: "idle",
+                    actions: () => notifyError(ERROR_MSGS.CREATING_NOTE),
+                },
             },
         },
         loadingNoteVersions: {
             invoke: {
                 id: "fetchNoteVersions",
                 src: "getNoteVersions",
-                input: ({ context: { selectedNoteId, notesVersions } }) => ({ selectedNoteId, notesVersions }),
+                input: ({ context: { selectedNoteId, notesVersions } }) => ({
+                    selectedNoteId,
+                    notesVersions,
+                }),
                 onDone: {
                     target: "showingEditor",
                     actions: assign({
                         notesVersions: ({ context, event: { output } }) =>
-                            ({ ...context.notesVersions, [context.selectedNoteId]: output }) as NotesVersionsObj,
-                    })
+                            ({
+                                ...context.notesVersions,
+                                [context.selectedNoteId]: output,
+                            } as NotesVersionsObj),
+                    }),
                 },
-                onError: {}
-            }
+                onError: {
+                    target: "idle",
+                    actions: () => notifyError(ERROR_MSGS.LOADING_NOTE),
+                },
+            },
         },
         deletingNote: {
             invoke: {
@@ -135,13 +175,19 @@ const notesMachine = setup({
                 onDone: {
                     target: "idle",
                     actions: assign({
-                        notes: ({ context }) => Object.fromEntries(Object.entries(context.notes).filter(e => e[0] !== context.noteToDeleteId)),
-                        noteToDeleteId: null
+                        notes: ({ context }) =>
+                            Object.fromEntries(
+                                Object.entries(context.notes).filter(
+                                    (e) => e[0] !== context.noteToDeleteId
+                                )
+                            ),
+                        noteToDeleteId: null,
                     }),
                 },
                 onError: {
-
-                }
+                    target: "idle",
+                    actions: () => notifyError(ERROR_MSGS.DELETING_NOTE),
+                },
             },
         },
         showingEditor: {
@@ -155,10 +201,10 @@ const notesMachine = setup({
                 SELECT_NOTE: {
                     target: "loadingNoteVersions",
                     actions: assign({ selectedNoteId: ({ event }) => event.id }),
-                    guards: ({ event, context }) => event.id !== context.selectedNoteId
+                    guards: ({ event, context }) => event.id !== context.selectedNoteId,
                 },
                 ADD_NOTE: {
-                    target: "addingNote"
+                    target: "addingNote",
                 },
                 CLOSE_NOTE: {
                     target: "idle",
@@ -166,94 +212,117 @@ const notesMachine = setup({
                         selectedNoteId: null,
                         selectedNoteVersion: -1,
                         selectedNoteTitle: "",
-                        draftContent: ""
+                        draftContent: "",
                     }),
                 },
                 DELETE_NOTE: {
                     target: ".deletingNote",
-                    actions: assign({ noteToDeleteId: ({ event }) => event.id })
-                }
+                    actions: assign({ noteToDeleteId: ({ event }) => event.id }),
+                },
             },
             states: {
                 editing: {
                     on: {
                         UPDATE_NOTE_TITLE: {
                             target: "updatingNote",
-                            actions: assign({ selectedNoteTitle: ({ event }) => event.title })
+                            actions: assign({ selectedNoteTitle: ({ event }) => event.title }),
                         },
                         ADD_NOTE_VERSION: {
                             target: "updatingNote",
                             actions: assign({ draftContent: ({ event }) => event.content }),
-                            guards: ({ event, context }) => event.content !== context.notesVersions[context.selectedNoteId][0].content
+                            guards: ({ event, context }) =>
+                                event.content !==
+                                context.notesVersions[context.selectedNoteId][0].content,
                         },
                         SELECT_PREVIOUS_VERSION: {
                             target: "viewingPreviousVersion",
                             actions: assign({
                                 selectedNoteVersion: ({ event }) => event.version,
-                                draftContent: ({ event }) => event.draftContent
+                                draftContent: ({ event }) => event.draftContent,
                             }),
-                        }
-                    }
+                        },
+                    },
                 },
                 viewingPreviousVersion: {
                     on: {
                         SELECT_DRAFT: {
                             target: "editing",
-                            actions: assign({ selectedNoteVersion: -1 })
+                            actions: assign({ selectedNoteVersion: -1 }),
                         },
                         SELECT_PREVIOUS_VERSION: {
                             actions: assign({ selectedNoteVersion: ({ event }) => event.version }),
                         },
                         COMPARE_PREVIOUS_VERSION: {
-                            target: "comparingPreviousVersion"
-                        }
-                    }
+                            target: "comparingPreviousVersion",
+                        },
+                    },
                 },
                 comparingPreviousVersion: {
                     on: {
                         SELECT_DRAFT: {
                             target: "editing",
-                            actions: assign({ selectedNoteVersion: -1 })
+                            actions: assign({ selectedNoteVersion: -1 }),
                         },
                         SELECT_PREVIOUS_VERSION: {
                             actions: assign({ selectedNoteVersion: ({ event }) => event.version }),
-                        }
-                    }
+                        },
+                    },
                 },
                 updatingNote: {
                     invoke: {
                         id: "updateNote",
                         src: "patchNote",
-                        input: ({ context: { selectedNoteId, selectedNoteTitle, draftContent } }) =>
-                            ({ selectedNoteId, selectedNoteTitle, draftContent }),
+                        input: ({
+                            context: { selectedNoteId, selectedNoteTitle, draftContent },
+                        }) => ({ selectedNoteId, selectedNoteTitle, draftContent }),
                         onDone: {
-                            target: "refreshNoteVersions", actions: assign({
-                                selectedNoteTitle: ({ event: { output: { title } } }) => title,
-                                notes: ({ context, event: { output } }) =>
-                                    ({ ...context.notes, [context.selectedNoteId]: output }),
-                            })
+                            target: "refreshNoteVersions",
+                            actions: assign({
+                                selectedNoteTitle: ({
+                                    event: {
+                                        output: { title },
+                                    },
+                                }) => title,
+                                notes: ({ context, event: { output } }) => ({
+                                    ...context.notes,
+                                    [context.selectedNoteId]: output,
+                                }),
+                            }),
                         },
                         onError: {
                             target: "editing",
-                            actions: assign({
-                                selectedNoteTitle: ({ context }) => context.notes[context.selectedNoteId].title
-                            })
-                        }
-                    }
+                            actions: [
+                                assign({
+                                    selectedNoteTitle: ({ context }) =>
+                                        context.notes[context.selectedNoteId].title,
+                                }),
+                                () => notifyError(ERROR_MSGS.UPDATING_NOTE),
+                            ],
+                        },
+                    },
                 },
                 refreshNoteVersions: {
                     invoke: {
                         id: "fetchNoteVersions",
                         src: "getNoteVersions",
-                        input: ({ context: { selectedNoteId, notesVersions } }) => ({ selectedNoteId, notesVersions }),
+                        input: ({ context: { selectedNoteId, notesVersions } }) => ({
+                            selectedNoteId,
+                            notesVersions,
+                        }),
                         onDone: {
-                            target: "editing", actions: assign({
-                                notesVersions: ({ context, event: { output } }) =>
-                                    ({ ...context.notesVersions, [context.selectedNoteId]: output }),
-                            })
+                            target: "editing",
+                            actions: assign({
+                                notesVersions: ({ context, event: { output } }) => ({
+                                    ...context.notesVersions,
+                                    [context.selectedNoteId]: output,
+                                }),
+                            }),
                         },
-                        onError: {}
-                    }
+                        onError: {
+                            target: "editing",
+                            actions: () => notifyError(ERROR_MSGS.LOADING_NOTE),
+                        },
+                    },
                 },
                 deletingNote: {
                     invoke: {
@@ -263,15 +332,20 @@ const notesMachine = setup({
                         onDone: {
                             target: "editing",
                             actions: assign({
-                                notes: ({ context }) => Object.fromEntries(Object.entries(context.notes).filter(e => e[0] !== context.noteToDeleteId)),
-                                noteToDeleteId: null
-                            })
-                        }
-                    }
-                }
-            }
-        }
-    }
+                                notes: ({ context }) =>
+                                    Object.fromEntries(
+                                        Object.entries(context.notes).filter(
+                                            (e) => e[0] !== context.noteToDeleteId
+                                        )
+                                    ),
+                                noteToDeleteId: null,
+                            }),
+                        },
+                    },
+                },
+            },
+        },
+    },
 });
 
 const notesActor = createActor(notesMachine).start();

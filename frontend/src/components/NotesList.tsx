@@ -4,8 +4,6 @@ import { notesActor } from "../states/notesMachine";
 import { useSelector } from "@xstate/react";
 
 export default function NotesList() {
-    console.log(NotesList.name);
-
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [noteToDeleteId, setNoteToDeleteId] = useState("");
 
@@ -14,16 +12,13 @@ export default function NotesList() {
         setShowDeleteModal(true);
     };
 
-    const onDeleteConfirmBtnClick = (evt) => {
-        // evt.preventDefault();
-        console.log("remove Note");
+    const onDeleteConfirmBtnClick = () => {
         setShowDeleteModal(false);
         notesActor.send({ type: "DELETE_NOTE", id: noteToDeleteId });
         setNoteToDeleteId("");
     };
 
     const notes = useSelector(notesActor, (st) => st.context.notes);
-    console.log({ notes });
     const selectedNoteId = useSelector(notesActor, (st) => st.context.selectedNoteId);
 
     const ListItem = ({ note }: { note: Note }) => (
