@@ -6,6 +6,7 @@ import { useSelector } from "@xstate/react";
 import NoteEditor from "./NoteEditor";
 
 export default function Notes() {
+    const isShowingEditor = useSelector(notesActor, (st) => st.matches("showingEditor"));
     const [showSidePanel, setShowSidePanel] = useState(true);
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -15,8 +16,6 @@ export default function Notes() {
     );
 
     const handleNewNote = () => notesActor.send({ type: "ADD_NOTE" });
-
-    const isShowingEditor = useSelector(notesActor, (st) => st.matches("showingEditor"));
 
     return (
         <div className="notes">

@@ -15,14 +15,8 @@ export default function NoteEditor() {
     const notesVersions = useSelector(notesActor, (st) => st.context.notesVersions);
     const selectedNoteId = useSelector(notesActor, (st) => st.context.selectedNoteId);
     const selectedNoteTitle = useSelector(notesActor, (st) => st.context.selectedNoteTitle);
-    const [title, setTitle] = useState(selectedNoteTitle);
+    const selectedNoteVersion = useSelector(notesActor, (st) => st.context.selectedNoteVersion);
     const draftContent = useSelector(notesActor, (st) => st.context.draftContent);
-    const [editorState, setEditorState] = useState(
-        draftContent
-            ? EditorState.createWithContent(convertFromRaw(JSON.parse(draftContent)))
-            : EditorState.createEmpty()
-    );
-    const editorRef = useRef(null);
     const isViewingPrevVersion = useSelector(notesActor, (st) =>
         // @ts-expect-error: matches arg is typed never
         st.matches("showingEditor.viewingPreviousVersion")
@@ -31,8 +25,14 @@ export default function NoteEditor() {
         // @ts-expect-error: matches arg is typed never
         st.matches("showingEditor.comparingPreviousVersion")
     );
+    const [title, setTitle] = useState(selectedNoteTitle);
+    const [editorState, setEditorState] = useState(
+        draftContent
+            ? EditorState.createWithContent(convertFromRaw(JSON.parse(draftContent)))
+            : EditorState.createEmpty()
+    );
+    const editorRef = useRef(null);
 
-    const selectedNoteVersion = useSelector(notesActor, (st) => st.context.selectedNoteVersion);
     useEffect(() => {
         setTitle(selectedNoteTitle);
     }, [selectedNoteTitle]);

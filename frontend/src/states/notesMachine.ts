@@ -1,7 +1,7 @@
 import { setup, assign, fromPromise, createActor } from "xstate";
 import { NotesObj, NotesVersionsObj, NoteVersion } from "../types/notes.type";
 import { deleteNote, getAllNotes, getAllNoteVersions, patchNote, postNote } from "../api/notes.api";
-import { notify, notifySuccess, notifyError, ERROR_MSG as ERROR_MSGS } from "../services/toast";
+import { notify, notifyError, ERROR_MSGS } from "../services/toast";
 
 /* Notes Machine */
 
