@@ -1,6 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, Path
 from sqlalchemy.orm import Session
-from sqlalchemy import cast, String
 from ..schemas.notes import (
     PostNoteRequest,
     PostNoteResponse,
@@ -9,11 +8,9 @@ from ..schemas.notes import (
     PatchNoteResponse,
 )
 from ..models.notes import Note as NoteModel, NoteVersion as NoteVersionModel
-from sqlalchemy.dialects.postgresql import UUID
 from ..database import get_db
 from typing import Optional
-from fastapi.responses import JSONResponse
-from uuid import uuid4, UUID
+from uuid import UUID
 
 router = APIRouter()
 

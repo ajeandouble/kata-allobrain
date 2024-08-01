@@ -7,11 +7,13 @@
 - [x] Content upload
 - [x] Note creation
 - [.] Note history
-  - [x] On going back to previous note send `SELECT_PREVIOUS_VERSION` which saves editor content into `draftContent`
+  - [x] On going back to previous note send `SELECT_PREVIOUS_VERSION` that saves editor content into `draftContent`
   - [x] Clear out `draftContent` on _editing_ state
-- [ ] Note comparison
+- [x] Note comparison
 - [ ] Rollback mechanisms and opportunistic requests
 - [ ] Improve ui and add save button
+- [ ] Naming
+  - [ ] `globalService.ts` -> `notesMachine.ts`
 
 Technical test for Allo Brain
 

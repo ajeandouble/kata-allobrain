@@ -18,7 +18,11 @@ export default function NoteVersionsDropDown({ handlePreviousVersionSelect }) {
     const notesVersions = allNotesVersions[selectedNoteId];
 
     const onNoteVersionClick = (versionIdx) => {
-        handlePreviousVersionSelect(versionIdx);
+        if (versionIdx === -1) {
+            notesActor.send({ type: "SELECT_DRAFT" });
+        } else {
+            handlePreviousVersionSelect(versionIdx);
+        }
         setShowDropdown(false);
     };
 
@@ -39,9 +43,13 @@ export default function NoteVersionsDropDown({ handlePreviousVersionSelect }) {
             </button>
             {showDropdown && (
                 <ul className="note-version-dropdown__list">
+                    {notesVersions.length > 1 && (
+                        <li key={"draft"} onClick={() => onNoteVersionClick(-1)}>
+                            <b>Draft</b>
+                        </li>
+                    )}
                     {notesVersions.toSpliced(-1).map((version: NoteVersion, versionIdx: number) => (
                         <li key={version.id} onClick={() => onNoteVersionClick(versionIdx)}>
-                            <b>{notesVersions.length - versionIdx - 1}: </b>
                             {new Date(version.created_at).toLocaleString()}
                         </li>
                     ))}

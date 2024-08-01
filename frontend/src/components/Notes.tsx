@@ -18,7 +18,7 @@ export default function Notes() {
     const state = useSelector(notesActor, (state) => state);
     return (
         <div className="notes">
-            <pre>{JSON.stringify(state, null, 2)}</pre>
+            {/* <pre>{JSON.stringify(state, null, 2)}</pre> */}
             <img
                 className="notes__sidebar-toggle"
                 src="/burger-menu.svg"
@@ -38,7 +38,7 @@ export default function Notes() {
                     <NotesList />
                 </div>
                 <div className="notes-container__content">{isShowingEditor && <NoteEditor />}</div>
-                <pre>{JSON.stringify(state.value)}</pre>
+                {/* <pre>{JSON.stringify(state.value)}</pre> */}
             </div>
         </div>
     );

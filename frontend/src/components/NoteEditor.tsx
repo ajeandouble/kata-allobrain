@@ -50,22 +50,23 @@ export default function NoteEditor() {
     }, [selectedNoteTitle]);
 
     useEffect(() => {
-        const prevRawContent = notesVersions[selectedNoteId][selectedNoteVersion].content;
-        if (prevRawContent) {
-            setEditorState(
-                EditorState.createWithContent(convertFromRaw(JSON.parse(prevRawContent)))
-            );
+        if (selectedNoteVersion === -1) {
+            if (draftContent) {
+                setEditorState(
+                    EditorState.createWithContent(convertFromRaw(JSON.parse(draftContent)))
+                );
+            } else {
+                setEditorState(EditorState.createEmpty());
+            }
+        } else {
+            const prevRawContent = notesVersions[selectedNoteId][selectedNoteVersion].content;
+            if (prevRawContent) {
+                setEditorState(
+                    EditorState.createWithContent(convertFromRaw(JSON.parse(prevRawContent)))
+                );
+            }
         }
     }, [selectedNoteVersion]);
-
-    // const { notes, notesVersions, currNoteId, addNoteVersion } = useNotesContext();
-    // const [currVersion, setCurrVersion] = useState<number | undefined>(undefined);
-    // const [editorState, setEditorState] = useState<EditorState>(EditorState.createEmpty());
-    // const [title, setTitle] = useState("");
-    // const [isComparing, setIsComparing] = useState(false);
-    // const [comparisonEditorState, setComparisonEditorState] = useState<EditorState | null>(null);
-
-    // const editorRef = useRef<Editor>(null);
 
     const onTab = (evt: React.KeyboardEvent) => {
         evt.preventDefault();
@@ -78,12 +79,6 @@ export default function NoteEditor() {
         setEditorState(EditorState.push(currentState, newState, "insert-characters"));
     };
 
-    // // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    // const handleReturn = (_: SyntheticKeyboardEvent): boolean => {
-    //     setEditorState(RichUtils.insertSoftNewline(editorState));
-    //     return true;
-    // };
-
     const onKeyDownSave = (evt: React.KeyboardEvent<HTMLDivElement>) => {
         if ((evt.metaKey || evt.ctrlKey) && evt.keyCode === 83) {
             evt.preventDefault();
@@ -94,14 +89,15 @@ export default function NoteEditor() {
     };
 
     const onInputKeyDown = (evt: React.SyntheticEvent<InputEvent>) => {
-        // TODO: check good typescript typing
         if ("key" in evt && evt.key === "Enter" && evt.target.value) {
             notesActor.send({ type: "UPDATE_NOTE_TITLE", title: evt.target.value });
+            editorRef.current.focusEditor();
         }
     };
 
-    const handlePreviousVersionSelect = (version: number) => {
-        if (version === selectedNoteVersion) return; // FIXME: guarded already in state machine
+    const handlePreviousVersionSelect = (version: number | string) => {
+        if (version === selectedNoteVersion) return;
+
         const draftContent = JSON.stringify(convertToRaw(editorState.getCurrentContent()));
         console.log("notesActor.send", draftContent);
         notesActor.send({
@@ -113,18 +109,19 @@ export default function NoteEditor() {
 
     const onCloseHistoryClick = () => notesActor.send({ type: "SELECT_DRAFT" });
     const onCompareVersionClick = () => notesActor.send({ type: "COMPARE_PREVIOUS_VERSION" });
+    const onEditorCloseClick = () => notesActor.send({ type: "CLOSE_NOTE" });
 
     return (
         <div className="note-editor">
             <div className="note-editor__header">
                 <div className="note-editor__header__versions">
-                    <pre>
+                    {/* <pre>
                         {JSON.stringify(
                             { isviewingPreviousVersion: isViewingPrevVersion },
                             null,
                             2
                         )}
-                    </pre>
+                    </pre> */}
                     <NoteVersionsDropDown
                         handlePreviousVersionSelect={handlePreviousVersionSelect}
                     />
@@ -147,15 +144,18 @@ export default function NoteEditor() {
                         </div>
                     )}
                 </div>
-            </div>{" "}
+                <img
+                    className="note-editor__header__close-editor"
+                    src="/close-editor.svg"
+                    onClick={onEditorCloseClick}
+                ></img>
+            </div>
             <h2 className="note-editor__title">
                 <input
                     ref={inputTitleRef}
                     defaultValue={selectedNoteTitle}
                     value={title}
                     onChange={(evt) => setTitle(evt.target.value)}
-                    // onKeyDown={onInputKeyDown}
-                    // onChange={(evt) => setTitle(evt.target.value)}
                     // @ts-ignore
                     onKeyDown={onInputKeyDown}
                 ></input>
@@ -169,7 +169,7 @@ export default function NoteEditor() {
                         ref={editorRef}
                         editorState={editorState}
                         onEditorStateChange={(newEditorState) =>
-                            selectedNoteVersion === 0 && setEditorState(newEditorState)
+                            selectedNoteVersion === -1 && setEditorState(newEditorState)
                         }
                         wrapperClassName="wrapper-class"
                         editorClassName="editor-class"

@@ -9,19 +9,21 @@ export default function NotesList() {
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [noteToDeleteId, setNoteToDeleteId] = useState("");
 
-    const onDeleteClick = (noteId: string) => {
+    const onDeleteIconClick = (noteId: string) => {
         setNoteToDeleteId(noteId);
         setShowDeleteModal(true);
     };
 
-    const handleConfirmDelete = () => {
-        if (noteToDeleteId) {
-            console.log("remove Note");
-            setShowDeleteModal(false);
-            setNoteToDeleteId("");
-        }
+    const onDeleteConfirmBtnClick = (evt) => {
+        // evt.preventDefault();
+        console.log("remove Note");
+        setShowDeleteModal(false);
+        notesActor.send({ type: "DELETE_NOTE", id: noteToDeleteId });
+        setNoteToDeleteId("");
     };
+
     const notes = useSelector(notesActor, (st) => st.context.notes);
+    console.log({ notes });
     const selectedNoteId = useSelector(notesActor, (st) => st.context.selectedNoteId);
 
     const ListItem = ({ note }: { note: Note }) => (
@@ -37,8 +39,9 @@ export default function NotesList() {
                 className="notes-list__delete-icon"
                 onClick={(e) => {
                     e.stopPropagation();
-                    onDeleteClick(note.id);
+                    onDeleteIconClick(note.id);
                 }}
+                hidden={selectedNoteId === note.id}
             />
         </li>
     );
@@ -55,7 +58,10 @@ export default function NotesList() {
             {showDeleteModal && (
                 <div className="delete-modal">
                     <p>Are you sure you want to delete this note?</p>
-                    <button className="delete-modal__confirm" onClick={handleConfirmDelete}>
+                    <button
+                        className="delete-modal__confirm"
+                        onClick={(evt) => onDeleteConfirmBtnClick(evt)}
+                    >
                         Yes, delete&nbsp;
                     </button>
                     <button

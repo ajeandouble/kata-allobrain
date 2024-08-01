@@ -169,13 +169,6 @@
     transition-duration: 100ms;
 }
 
-/*
-.note-editor__header__save button {
-}
-
-.note-editor__header__save button {
-} */
-
 .note-editor__title input {
     position: relative;
     left: 3rem;
@@ -190,6 +183,19 @@
 .note-editor__content {
     margin: 1.5rem;
     padding: 2rem;
+}
+
+.note-editor__header__close-editor {
+    position: absolute;
+    right: 2vw;
+    top: 1vh;
+    width: 2rem;
+    opacity: 80%;
+    cursor: pointer;
+}
+
+.note-editor__header__close-editor:hover {
+    opacity: 100%;
 }
 
 /* Versions Dropdown */
