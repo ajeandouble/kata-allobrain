@@ -22,7 +22,7 @@ export default function NoteEditor() {
             ? EditorState.createWithContent(convertFromRaw(JSON.parse(draftContent)))
             : EditorState.createEmpty()
     );
-    const editorRef = useRef();
+    const editorRef = useRef(null);
     const isViewingPrevVersion = useSelector(notesActor, (st) =>
         // @ts-expect-error: matches arg is typed never
         st.matches("showingEditor.viewingPreviousVersion")
@@ -136,10 +136,10 @@ export default function NoteEditor() {
                     defaultValue={selectedNoteTitle}
                     value={title}
                     onChange={(evt) => setTitle(evt.target.value)}
+                    disabled={isComparingPrevVersion}
                     // @ts-expect-error: React typing for input events
                     onKeyDown={onInputKeyDown}
                 ></input>
-                {/* </form> */}
             </h2>
             <div className="note-editor__content" onKeyDown={onKeyDownSave}>
                 {isComparingPrevVersion ? (

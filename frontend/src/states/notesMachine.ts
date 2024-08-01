@@ -40,12 +40,9 @@ const notesMachine = setup({
                 {} as NotesObj
             );
         }),
-        getNoteVersions: fromPromise(async () => {
-            return new Promise((_, reject) => {
-                setTimeout(() => {
-                    reject(new Error("Failed to fetch notes"));
-                }, 500); // 0.5 second delay to simulate async error
-            });
+        getNoteVersions: fromPromise(async ({ input }) => {
+            const { selectedNoteId: id } = input as { selectedNoteId: string };
+            return (await getAllNoteVersions({ params: { id } })) as NoteVersion[];
         }),
         postNote: fromPromise(async () => {
             return await postNote({ body: { title: "Untitled Note" } });
