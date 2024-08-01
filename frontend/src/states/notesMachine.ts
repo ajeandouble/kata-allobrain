@@ -19,14 +19,17 @@ export type NotesEvent =
     | { type: "SELECT_NOTE"; id: string }
     | { type: "CLOSE_NOTE" }
     | { type: "ADD_NOTE" }
-    | { type: "DELETE_NOTE" }
-    | { type: "UPDATE_NOTE_TITLE" }
-    | { type: "ADD_NOTE_VERSION" }
-    | { type: "SELECT_PREVIOUS_VERSION" };
+    | { type: "DELETE_NOTE", id: string }
+    | { type: "UPDATE_NOTE_TITLE", title: string }
+    | { type: "ADD_NOTE_VERSION", content?: string, title?: string }
+    | { type: "SELECT_PREVIOUS_VERSION", version: number, draftContent: string }
+    | { type: "SELECT_DRAFT" }
+    | { type: "COMPARE_PREVIOUS_VERSION" };
 
 const notesMachine = setup({
     types: {
-        context: {} as NotesContext
+        context: {} as NotesContext,
+        events: {} as NotesEvent
     },
     actors: {
         getAllNotes: fromPromise(async () => {
@@ -52,7 +55,7 @@ const notesMachine = setup({
             return await deleteNote({ params: { id } });
         })
     }
-}).createMachine<NotesContext, NotesEvent>({
+}).createMachine({
     id: "notesMachine",
     initial: "loading",
     context: {
@@ -77,7 +80,6 @@ const notesMachine = setup({
                 },
             },
         },
-        loadingNotesFailure: { on: { RETRY: "loading" } },
         idle: {
             on: {
                 SELECT_NOTE: {
@@ -119,7 +121,7 @@ const notesMachine = setup({
                     target: "showingEditor",
                     actions: assign({
                         notesVersions: ({ context, event: { output } }) =>
-                            ({ ...context.notesVersions, [context.selectedNoteId]: output }),
+                            ({ ...context.notesVersions, [context.selectedNoteId]: output }) as NotesVersionsObj,
                     })
                 },
                 onError: {}
@@ -162,7 +164,7 @@ const notesMachine = setup({
                     target: "idle",
                     actions: assign({
                         selectedNoteId: null,
-                        selectNoteVersion: null,
+                        selectedNoteVersion: -1,
                         selectedNoteTitle: "",
                         draftContent: ""
                     }),
@@ -173,7 +175,6 @@ const notesMachine = setup({
                 }
             },
             states: {
-                initial: "editing",
                 editing: {
                     on: {
                         UPDATE_NOTE_TITLE: {

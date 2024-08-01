@@ -44,7 +44,8 @@ type PostNoteReq = {
 type PostNoteRes = {
     id: string
     title: string,
-    version: number,
+    content: string,
+    latest_version: number
     created_at: string,
     updated_at: string,
 }

@@ -5,13 +5,13 @@ export function throttle<T extends Function>(callback: T, delay = 1000) {
     return function (this: unknown, ...args: unknown[]) {
         // eslint-disable-next-line @typescript-eslint/no-this-alias
         const context = this;
-
         if (timerFlag === null) {
             callback.apply(context, args);
             timerFlag = setTimeout(() => {
                 timerFlag = null;
-                clearTimeout;
+                clearTimeout(timerFlag);
             }, delay);
+
         }
     };
 }
@@ -23,14 +23,12 @@ export function debounce<T extends Function>(callback: T, delay = 1000) {
     return function (this: unknown, ...args: unknown[]) {
         // eslint-disable-next-line @typescript-eslint/no-this-alias
         const context = this;
-
         if (timerFlag === null) {
-            timerFlag = setTimeout(() => {
-                callback.apply(context, args);
-                timerFlag = null;
-                clearTimeout(timerFlag);
-            }, delay);
-
+            callback.apply(context, args);
         }
+        clearTimeout(timerFlag);
+        timerFlag = setTimeout(() => {
+            timerFlag = null;
+        }, delay);
     };
 }

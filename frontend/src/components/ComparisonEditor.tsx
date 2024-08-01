@@ -2,16 +2,16 @@ import { useEffect, useState } from "react";
 import { ContentState, EditorState, Modifier } from "draft-js";
 import { Editor } from "react-draft-wysiwyg";
 import { useSelector } from "@xstate/react";
-import { notesActor } from "../states/globalService";
+import { notesActor } from "../states/notesMachine";
 import { diffWords } from "diff";
 
 export default function ComparisonEditor() {
     const selectedNoteVersion = useSelector(notesActor, (st) => st.context.selectedNoteVersion);
-    const selectedNoteId = useSelector(notesActor, (state) => state.context.selectedNoteId);
-    const allNotesVersions = useSelector(notesActor, (state) => state.context.notesVersions);
+    const selectedNoteId = useSelector(notesActor, (st) => st.context.selectedNoteId);
+    const allNotesVersions = useSelector(notesActor, (st) => st.context.notesVersions);
     const notesVersions = allNotesVersions[selectedNoteId];
     const [comparisonEditorState, setComparisonEditorState] = useState(null);
-    const state = useSelector(notesActor, (st) => st); // FIXME: delete this after dbg!!!
+
     useEffect(() => {
         const currentContent = JSON.parse(notesVersions[selectedNoteVersion].content).blocks[0]
             .text;
@@ -62,6 +62,7 @@ export default function ComparisonEditor() {
         });
 
         setComparisonEditorState(comparisonState);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [selectedNoteVersion]);
 
     return (

@@ -1,24 +1,25 @@
 import NotesList from "./NotesList";
 import { debounce as debounceFunc } from "../utils/";
 import { useState, useCallback } from "react";
-import { notesActor } from "../states/globalService";
+import { notesActor } from "../states/notesMachine";
 import { useSelector } from "@xstate/react";
 import NoteEditor from "./NoteEditor";
 
 export default function Notes() {
     const [showSidePanel, setShowSidePanel] = useState(true);
-    // const debounceSidePanel = useCallback(
-    //     debounceFunc(() => setShowSidePanel((prev) => !prev), 0),
-    //     []
-    // );
 
-    const onNewNoteClick = () => notesActor.send({ type: "ADD_NOTE" });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    const onNewNoteClick = useCallback(
+        debounceFunc(() => handleNewNote(), 1000),
+        []
+    );
 
-    const isShowingEditor = useSelector(notesActor, (state) => state.matches("showingEditor"));
-    const state = useSelector(notesActor, (state) => state);
+    const handleNewNote = () => notesActor.send({ type: "ADD_NOTE" });
+
+    const isShowingEditor = useSelector(notesActor, (st) => st.matches("showingEditor"));
+
     return (
         <div className="notes">
-            {/* <pre>{JSON.stringify(state, null, 2)}</pre> */}
             <img
                 className="notes__sidebar-toggle"
                 src="/burger-menu.svg"
@@ -38,7 +39,6 @@ export default function Notes() {
                     <NotesList />
                 </div>
                 <div className="notes-container__content">{isShowingEditor && <NoteEditor />}</div>
-                {/* <pre>{JSON.stringify(state.value)}</pre> */}
             </div>
         </div>
     );

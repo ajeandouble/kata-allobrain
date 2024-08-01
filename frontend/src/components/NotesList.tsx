@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Note } from "../types/notes.type";
-import { notesActor } from "../states/globalService";
+import { notesActor } from "../states/notesMachine";
 import { useSelector } from "@xstate/react";
 
 export default function NotesList() {

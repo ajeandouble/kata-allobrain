@@ -1,26 +1,14 @@
+import React from "react";
 import { useState, useRef, useEffect } from "react";
-import {
-    EditorState,
-    ContentState,
-    Modifier,
-    RichUtils,
-    convertToRaw,
-    convertFromRaw,
-} from "draft-js";
-
-import { Editor, SyntheticKeyboardEvent } from "react-draft-wysiwyg";
+import { EditorState, Modifier, convertToRaw, convertFromRaw } from "draft-js";
+import { Editor } from "react-draft-wysiwyg";
 import "react-draft-wysiwyg/dist/react-draft-wysiwyg.css";
-import { PostNoteReq, PatchNoteRes, GetNoteVersionRes } from "../types/notes.type";
 import NoteVersionsDropDown from "./NoteVersionsDropDown";
 import ComparisonEditor from "./ComparisonEditor";
-const TAB_SIZE = 4;
-import React from "react";
-import { diffWords } from "diff";
+import { notesActor } from "../states/notesMachine";
 import { useSelector } from "@xstate/react";
-import { notesActor } from "../states/globalService";
-import { NoteVersions } from "../types/notes.type";
 
-// TODO: move Comparison component
+const TAB_SIZE = 4;
 
 export default function NoteEditor() {
     console.log(NoteEditor.name);
@@ -38,9 +26,11 @@ export default function NoteEditor() {
     );
     const editorRef = useRef();
     const isViewingPrevVersion = useSelector(notesActor, (st) =>
+        // @ts-expect-error: matches arg is typed never
         st.matches("showingEditor.viewingPreviousVersion")
     );
     const isComparingPrevVersion = useSelector(notesActor, (st) =>
+        // @ts-expect-error: matches arg is typed never
         st.matches("showingEditor.comparingPreviousVersion")
     );
 
@@ -66,6 +56,7 @@ export default function NoteEditor() {
                 );
             }
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [selectedNoteVersion]);
 
     const onTab = (evt: React.KeyboardEvent) => {
@@ -88,14 +79,14 @@ export default function NoteEditor() {
         }
     };
 
-    const onInputKeyDown = (evt: React.SyntheticEvent<InputEvent>) => {
+    const onInputKeyDown = (evt: React.ChangeEvent<HTMLInputElement>) => {
         if ("key" in evt && evt.key === "Enter" && evt.target.value) {
             notesActor.send({ type: "UPDATE_NOTE_TITLE", title: evt.target.value });
-            editorRef.current.focusEditor();
+            editorRef!.current!.focusEditor();
         }
     };
 
-    const handlePreviousVersionSelect = (version: number | string) => {
+    const handlePreviousVersionSelect = (version: number) => {
         if (version === selectedNoteVersion) return;
 
         const draftContent = JSON.stringify(convertToRaw(editorState.getCurrentContent()));
@@ -115,13 +106,6 @@ export default function NoteEditor() {
         <div className="note-editor">
             <div className="note-editor__header">
                 <div className="note-editor__header__versions">
-                    {/* <pre>
-                        {JSON.stringify(
-                            { isviewingPreviousVersion: isViewingPrevVersion },
-                            null,
-                            2
-                        )}
-                    </pre> */}
                     <NoteVersionsDropDown
                         handlePreviousVersionSelect={handlePreviousVersionSelect}
                     />
@@ -156,7 +140,7 @@ export default function NoteEditor() {
                     defaultValue={selectedNoteTitle}
                     value={title}
                     onChange={(evt) => setTitle(evt.target.value)}
-                    // @ts-ignore
+                    // @ts-expect-error: React typing for input events
                     onKeyDown={onInputKeyDown}
                 ></input>
                 {/* </form> */}
