@@ -16,7 +16,6 @@ export default function Notes() {
 
     const handleNewNote = () => notesActor.send({ type: "ADD_NOTE" });
 
-    const st = useSelector(notesActor, (st) => st.value);
     const isShowingEditor = useSelector(notesActor, (st) => st.matches("showingEditor"));
 
     return (
