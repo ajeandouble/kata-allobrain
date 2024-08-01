@@ -1,17 +1,12 @@
-import { GetNoteRes, PostNoteRes, GetNoteVersionsReq, PostNoteReq, PatchNoteReq, PatchNoteRes, DeleteNoteVersionReq, GetNoteVersionRes, GetAllNoteVersionsRes, GetAllNotesRes } from "../types/notes.type";
-import ky from 'ky';
+import { GetNoteRes, PostNoteRes, GetNoteVersionsReq, PostNoteReq, PatchNoteReq, PatchNoteRes, DeleteNoteVersionReq, GetNoteVersionRes, GetAllNoteVersionsRes, GetAllNotesRes, NoteVersion } from "../types/notes.type";
+import ky from "../services/ky";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
 async function getNote() { }
 
 async function getAllNotes(): Promise<GetNoteRes[] | undefined> {
-    try {
-        const data: GetAllNotesRes = await ky.get(`${API_URL}/notes/`).json();
-        return data;
-    } catch (err) {
-        console.error(err);
-    }
+    return await ky.get(`${API_URL}/notes/`).json();
 }
 
 async function postNote(props: PostNoteReq): Promise<PostNoteRes | undefined> {
@@ -45,20 +40,14 @@ async function deleteNote(props: DeleteNoteVersionReq) {
 async function getAllNoteVersions(props: GetNoteVersionsReq): Promise<GetAllNoteVersionsRes | undefined> {
     const { id } = props.params;
     try {
-        const data = await ky.get(`${API_URL}/notes/${id}/versions`).json();
-        return data as GetAllNoteVersionsRes;
-    } catch (err) {
-        console.error(err);
-    }
-}
-async function getLatestNoteVersion(props: GetNoteVersionsReq): Promise<GetNoteVersionRes | undefined> {
-    const { id } = props.params;
-    try {
-        const data = await ky.get(`${API_URL}/notes/${id}/versions/latest`).json();
-        return data as GetNoteVersionRes;
+        const data = await ky.get(`${API_URL}/notes/${id}/versions`).json() as GetAllNoteVersionsRes;
+        if (!(data?.length > 0))
+            throw new Error("Can't fetch note versions");
+        return data;
     } catch (err) {
         console.error(err);
     }
 }
 
-export { postNote, getNote, getAllNotes, patchNote, deleteNote, getAllNoteVersions, getLatestNoteVersion };
+
+export { postNote, getNote, getAllNotes, patchNote, deleteNote, getAllNoteVersions };

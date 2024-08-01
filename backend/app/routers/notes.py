@@ -1,6 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, Path
 from sqlalchemy.orm import Session
-from sqlalchemy import cast, String
 from ..schemas.notes import (
     PostNoteRequest,
     PostNoteResponse,
@@ -9,10 +8,8 @@ from ..schemas.notes import (
     PatchNoteResponse,
 )
 from ..models.notes import Note as NoteModel, NoteVersion as NoteVersionModel
-from sqlalchemy.dialects.postgresql import UUID
 from ..database import get_db
 from typing import Optional
-from fastapi.responses import JSONResponse
 from uuid import UUID
 
 router = APIRouter()
@@ -51,22 +48,36 @@ async def read_note(id: UUID, db: Session = Depends(get_db)):
     return note
 
 
-@router.patch("/{id}", response_model=PatchNoteResponse | GetNoteResponse)
+@router.patch("/{id}", response_model=PatchNoteResponse, status_code=200)
 async def update_note(id: UUID, body: PatchNoteRequest, db: Session = Depends(get_db)):
     note = db.query(NoteModel).filter(NoteModel.id == id).first()
+    print(note)
+    last_note_version = (
+        db.query(NoteVersionModel)
+        .filter(
+            NoteVersionModel.note_id == note.id,
+            NoteVersionModel.version == note.latest_version,
+        )
+        .first()
+    )
     if note is None:
         raise HTTPException(status_code=404, detail="Note not found")
 
-    if body.title:
+    if (not body.title or body.title == note.title) and not body.content:
+        return note
+
+    if body.title and body.title != note.title:
         note.title = body.title
 
-    latest_version = int(note.latest_version) + 1
-    note.latest_version = latest_version
+    if body.content and body.content != last_note_version.content:
+        latest_version = int(note.latest_version) + 1
+        note.latest_version = latest_version
 
-    new_version = NoteVersionModel(
-        note_id=note.id, content=body.content, version=latest_version
-    )
-    db.add(new_version)
+        new_version = NoteVersionModel(
+            note_id=note.id, content=body.content, version=latest_version
+        )
+        db.add(new_version)
+
     db.commit()
 
     return note

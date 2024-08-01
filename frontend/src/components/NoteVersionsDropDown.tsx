@@ -1,26 +1,29 @@
-import { useState, Dispatch } from "react";
+import { useState } from "react";
 import { NoteVersion } from "../types/notes.type";
+import { notesActor } from "../states/notesMachine";
+import { useSelector } from "@xstate/react";
 
-type NoteVersionDropDownProps = {
-    versions: NoteVersion[];
-    currentVersion: number | undefined;
-    onSelect: Dispatch<number>;
-    setIsComparing: Dispatch<boolean>;
-};
+// type NoteVersionDropDownProps = {
+//     versions: NoteVersion[];
+//     currentVersion: number | undefined;
+//     onSelect: Dispatch<number>;
+//     setIsComparing: Dispatch<boolean>;
+// };
 
-export default function NoteVersionsDropDown({
-    versions,
-    currentVersion,
-    onSelect,
-    setIsComparing,
-}: NoteVersionDropDownProps) {
+export default function NoteVersionsDropDown({ handlePreviousVersionSelect }) {
     const [showDropdown, setShowDropdown] = useState(false);
 
-    const handleSelect = (versionIdx: number) => {
-        if (versionIdx === currentVersion) return;
-        onSelect(versionIdx);
+    const selectedNoteId = useSelector(notesActor, (state) => state.context.selectedNoteId);
+    const allNotesVersions = useSelector(notesActor, (state) => state.context.notesVersions);
+    const notesVersions = allNotesVersions[selectedNoteId];
+
+    const onNoteVersionClick = (versionIdx) => {
+        if (versionIdx === -1) {
+            notesActor.send({ type: "SELECT_DRAFT" });
+        } else {
+            handlePreviousVersionSelect(versionIdx);
+        }
         setShowDropdown(false);
-        setIsComparing(false);
     };
 
     return (
@@ -29,25 +32,27 @@ export default function NoteVersionsDropDown({
                 onMouseEnter={() => setShowDropdown(true)}
                 onClick={() => setShowDropdown(!showDropdown)}
             >
-                {showDropdown && versions.length > 1 ? (
+                {showDropdown && notesVersions.length > 1 ? (
                     "Versions"
                 ) : (
                     <span>
-                        <i>Last saved at: </i>
-                        {`${!!versions && new Date(versions[0].created_at).toLocaleString()}`}
+                        <i>Last saved at:&nbsp;</i>
+                        {`${new Date(notesVersions[0].created_at).toLocaleString()}`}
                     </span>
                 )}
             </button>
             {showDropdown && (
                 <ul className="note-version-dropdown__list">
-                    {currentVersion !== undefined &&
-                        versions.length > 1 &&
-                        versions.toSpliced(-1).map((version: NoteVersion, versionIdx: number) => (
-                            <li key={version.id} onClick={() => handleSelect(versionIdx)}>
-                                <b>{versions.length - versionIdx - 1}: </b>
-                                {new Date(version.created_at).toLocaleString()}
-                            </li>
-                        ))}
+                    {notesVersions.length > 1 && (
+                        <li key={"draft"} onClick={() => onNoteVersionClick(-1)}>
+                            <b>Draft</b>
+                        </li>
+                    )}
+                    {notesVersions.toSpliced(-1).map((version: NoteVersion, versionIdx: number) => (
+                        <li key={version.id} onClick={() => onNoteVersionClick(versionIdx)}>
+                            {new Date(version.created_at).toLocaleString()}
+                        </li>
+                    ))}
                 </ul>
             )}
         </div>

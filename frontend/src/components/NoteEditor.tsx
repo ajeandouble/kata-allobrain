@@ -1,109 +1,61 @@
+import React from "react";
 import { useState, useRef, useEffect } from "react";
-import {
-    EditorState,
-    ContentState,
-    Modifier,
-    RichUtils,
-    convertToRaw,
-    convertFromRaw,
-} from "draft-js";
-
-import { Editor, SyntheticKeyboardEvent } from "react-draft-wysiwyg";
+import { EditorState, Modifier, convertToRaw, convertFromRaw } from "draft-js";
+import { Editor } from "react-draft-wysiwyg";
 import "react-draft-wysiwyg/dist/react-draft-wysiwyg.css";
-import { PostNoteReq, PatchNoteRes, GetNoteVersionRes } from "../types/notes.type";
 import NoteVersionsDropDown from "./NoteVersionsDropDown";
 import ComparisonEditor from "./ComparisonEditor";
-import { useNotesContext } from "../context/NotesContext";
-const TAB_SIZE = 4;
-import React from "react";
-import { diffWords } from "diff";
+import { notesActor } from "../states/notesMachine";
+import { useSelector } from "@xstate/react";
 
-// TODO: move Comparison component
+const TAB_SIZE = 4;
 
 export default function NoteEditor() {
-    const { notes, notesVersions, currNoteId, addNoteVersion } = useNotesContext();
-    const [currVersion, setCurrVersion] = useState<number | undefined>(undefined);
-    const [editorState, setEditorState] = useState<EditorState>(EditorState.createEmpty());
-    const [title, setTitle] = useState("");
-    const [isComparing, setIsComparing] = useState(false);
-    const [comparisonEditorState, setComparisonEditorState] = useState<EditorState | null>(null);
+    const inputTitleRef = useRef();
+    const notesVersions = useSelector(notesActor, (st) => st.context.notesVersions);
+    const selectedNoteId = useSelector(notesActor, (st) => st.context.selectedNoteId);
+    const selectedNoteTitle = useSelector(notesActor, (st) => st.context.selectedNoteTitle);
+    const [title, setTitle] = useState(selectedNoteTitle);
+    const draftContent = useSelector(notesActor, (st) => st.context.draftContent);
+    const [editorState, setEditorState] = useState(
+        draftContent
+            ? EditorState.createWithContent(convertFromRaw(JSON.parse(draftContent)))
+            : EditorState.createEmpty()
+    );
+    const editorRef = useRef();
+    const isViewingPrevVersion = useSelector(notesActor, (st) =>
+        // @ts-expect-error: matches arg is typed never
+        st.matches("showingEditor.viewingPreviousVersion")
+    );
+    const isComparingPrevVersion = useSelector(notesActor, (st) =>
+        // @ts-expect-error: matches arg is typed never
+        st.matches("showingEditor.comparingPreviousVersion")
+    );
 
-    const handleCompareVersions = () => {
-        if (isComparing) {
-            setIsComparing(false);
-            return;
-        }
-        if (currVersion !== undefined && currVersion !== 0) {
-            const currentContent = JSON.parse(notesVersions[currNoteId][currVersion].content)
-                .blocks[0].text;
-            const latestContent = JSON.parse(notesVersions[currNoteId][0].content).blocks[0].text;
-
-            const differences = diffWords(currentContent, latestContent);
-
-            let comparisonText = "";
-            const decorations: { start: number; end: number; style: string }[] = [];
-
-            differences.forEach((part) => {
-                const start = comparisonText.length;
-                comparisonText += part.value;
-                const end = comparisonText.length;
-
-                if (part.added) {
-                    decorations.push({
-                        start,
-                        end,
-                        style: "HIGHLIGHT_ADDED",
-                    });
-                } else if (part.removed) {
-                    decorations.push({
-                        start,
-                        end,
-                        style: "HIGHLIGHT_REMOVED",
-                    });
-                }
-            });
-
-            let comparisonState = EditorState.createWithContent(
-                ContentState.createFromText(comparisonText)
-            );
-
-            decorations.forEach((decoration) => {
-                comparisonState = EditorState.push(
-                    comparisonState,
-                    Modifier.applyInlineStyle(
-                        comparisonState.getCurrentContent(),
-                        comparisonState.getSelection().merge({
-                            anchorOffset: decoration.start,
-                            focusOffset: decoration.end,
-                        }),
-                        decoration.style
-                    ),
-                    "change-inline-style"
-                );
-            });
-
-            setComparisonEditorState(comparisonState);
-            setIsComparing(true);
-        }
-    };
+    const selectedNoteVersion = useSelector(notesActor, (st) => st.context.selectedNoteVersion);
+    useEffect(() => {
+        setTitle(selectedNoteTitle);
+    }, [selectedNoteTitle]);
 
     useEffect(() => {
-        const versionsLength = notesVersions[currNoteId].length;
-        if (versionsLength) {
-            setCurrVersion(0);
-            const content = notesVersions[currNoteId][0].content;
-            if (content) {
-                const rawContent = JSON.parse(content);
-                setEditorState(EditorState.createWithContent(convertFromRaw(rawContent)));
+        if (selectedNoteVersion === -1) {
+            if (draftContent) {
+                setEditorState(
+                    EditorState.createWithContent(convertFromRaw(JSON.parse(draftContent)))
+                );
             } else {
                 setEditorState(EditorState.createEmpty());
             }
-            setTitle(notes[currNoteId].title);
+        } else {
+            const prevRawContent = notesVersions[selectedNoteId][selectedNoteVersion].content;
+            if (prevRawContent) {
+                setEditorState(
+                    EditorState.createWithContent(convertFromRaw(JSON.parse(prevRawContent)))
+                );
+            }
         }
-        if (editorRef.current) editorRef.current.focusEditor();
-    }, [notes, notesVersions, currNoteId]);
-
-    const editorRef = useRef<Editor>(null);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [selectedNoteVersion]);
 
     const onTab = (evt: React.KeyboardEvent) => {
         evt.preventDefault();
@@ -116,110 +68,94 @@ export default function NoteEditor() {
         setEditorState(EditorState.push(currentState, newState, "insert-characters"));
     };
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const handleReturn = (_: SyntheticKeyboardEvent): boolean => {
-        setEditorState(RichUtils.insertSoftNewline(editorState));
-        return true;
-    };
-
-    const handleSave = async () => {
-        if (!title || currVersion === undefined) return;
-        const rawContent = JSON.stringify(convertToRaw(editorState.getCurrentContent()));
-        if (
-            currVersion &&
-            notesVersions[currNoteId][currVersion].content === rawContent &&
-            notesVersions[currNoteId][currVersion].title === title
-        ) {
-            return;
-        }
-        const body: PostNoteReq["body"] = {
-            title: title,
-            content: rawContent,
-        };
-        const updatedNote: [PatchNoteRes, GetNoteVersionRes] | undefined = await addNoteVersion(
-            currNoteId,
-            body
-        );
-        if (updatedNote) {
-            setCurrVersion(0);
-        }
-    };
-
-    const onKeyDown = (evt: React.KeyboardEvent<HTMLDivElement>) => {
+    const onKeyDownSave = (evt: React.KeyboardEvent<HTMLDivElement>) => {
         if ((evt.metaKey || evt.ctrlKey) && evt.keyCode === 83) {
             evt.preventDefault();
-            handleSave();
+            const content = JSON.stringify(convertToRaw(editorState.getCurrentContent()));
+            notesActor.send({ type: "ADD_NOTE_VERSION", content });
         }
     };
 
-    const onVersionSelect = (versionIdx: number) => {
-        const content = notesVersions[currNoteId][versionIdx].content;
-        setEditorState(
-            content
-                ? EditorState.createWithContent(convertFromRaw(JSON.parse(content)))
-                : EditorState.createEmpty()
-        );
-        setCurrVersion(versionIdx);
-    };
-
-    // @ts-ignore
-    const onInputKeyDown = (evt: React.KeyboardEventHandler<HTMLInputElement>) => {
-        if ("key" in evt && evt.key === "Enter") {
-            if (title.length === 0) {
-                setTitle("Untitled Note");
-            } else if (editorRef?.current) {
-                editorRef.current.focusEditor();
-            }
+    const onInputKeyDown = (evt: React.ChangeEvent<HTMLInputElement>) => {
+        if ("key" in evt && evt.key === "Enter" && evt.target.value) {
+            notesActor.send({ type: "UPDATE_NOTE_TITLE", title: evt.target.value });
+            editorRef!.current!.focusEditor();
         }
     };
+
+    const handlePreviousVersionSelect = (version: number) => {
+        if (version === selectedNoteVersion) return;
+
+        const draftContent = JSON.stringify(convertToRaw(editorState.getCurrentContent()));
+        notesActor.send({
+            type: "SELECT_PREVIOUS_VERSION",
+            version,
+            draftContent,
+        });
+    };
+
+    const onCloseHistoryClick = () => notesActor.send({ type: "SELECT_DRAFT" });
+    const onCompareVersionClick = () => notesActor.send({ type: "COMPARE_PREVIOUS_VERSION" });
+    const onEditorCloseClick = () => notesActor.send({ type: "CLOSE_NOTE" });
 
     return (
         <div className="note-editor">
             <div className="note-editor__header">
                 <div className="note-editor__header__versions">
                     <NoteVersionsDropDown
-                        versions={notesVersions[currNoteId]}
-                        currentVersion={currVersion}
-                        onSelect={onVersionSelect}
-                        setIsComparing={setIsComparing}
+                        handlePreviousVersionSelect={handlePreviousVersionSelect}
                     />
-                    {currVersion !== undefined && currVersion !== 0 && (
-                        <button
-                            className="note-editor__compare-button"
-                            onClick={handleCompareVersions}
-                            hidden={isComparing}
-                        >
-                            Compare with latest version
-                        </button>
+                    {(isViewingPrevVersion || isComparingPrevVersion) && (
+                        <div className="note-editor__view-previous-note">
+                            <button
+                                className="note-editor__view-previous-note__close-history-button"
+                                onClick={onCloseHistoryClick}
+                            >
+                                Close history
+                            </button>
+                            {!isComparingPrevVersion && (
+                                <button
+                                    className="note-editor__view-previous-note__compare-button"
+                                    onClick={onCompareVersionClick}
+                                >
+                                    Compare with latest version
+                                </button>
+                            )}
+                        </div>
                     )}
                 </div>
-            </div>{" "}
+                <img
+                    className="note-editor__header__close-editor"
+                    src="/close-editor.svg"
+                    onClick={onEditorCloseClick}
+                ></img>
+            </div>
             <h2 className="note-editor__title">
                 <input
+                    ref={inputTitleRef}
+                    defaultValue={selectedNoteTitle}
                     value={title}
                     onChange={(evt) => setTitle(evt.target.value)}
-                    // @ts-ignore
+                    // @ts-expect-error: React typing for input events
                     onKeyDown={onInputKeyDown}
                 ></input>
+                {/* </form> */}
             </h2>
-            <div className="note-editor__content" onKeyDown={onKeyDown}>
-                {isComparing && comparisonEditorState ? (
-                    <ComparisonEditor
-                        setIsComparing={setIsComparing}
-                        comparisonEditorState={comparisonEditorState}
-                    />
+            <div className="note-editor__content" onKeyDown={onKeyDownSave}>
+                {isComparingPrevVersion ? (
+                    <ComparisonEditor />
                 ) : (
                     <Editor
                         ref={editorRef}
                         editorState={editorState}
-                        onEditorStateChange={(newEditorState) => {
-                            if (currVersion === 0) setEditorState(newEditorState);
-                        }}
+                        onEditorStateChange={(newEditorState) =>
+                            selectedNoteVersion === -1 && setEditorState(newEditorState)
+                        }
                         wrapperClassName="wrapper-class"
                         editorClassName="editor-class"
                         toolbarHidden={true}
                         onTab={onTab}
-                        handleReturn={handleReturn}
+                        // handleReturn={handleReturn}
                     />
                 )}
             </div>

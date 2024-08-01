@@ -1,11 +1,13 @@
 import "./App.css";
 import Notes from "./components/Notes";
-import { NotesProvider } from "./context/NotesContext";
+import { Toaster } from "react-hot-toast";
+
 function App() {
     return (
-        <NotesProvider>
+        <>
+            <Toaster />
             <Notes />
-        </NotesProvider>
+        </>
     );
 }
 

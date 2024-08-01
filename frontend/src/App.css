@@ -51,8 +51,8 @@
 
 .notes-container__sidebar.hidden {
     width: 0% !important;
-    /* transition: flex-grow 0.3s; */
-    flex-grow: 0.0000001;
+    transition: flex-grow 0.3s;
+    flex-grow: 0.00000001;
 }
 
 .notes-container__content {
@@ -89,6 +89,7 @@
 .notes-list__item span.selected {
     font-weight: bolder;
     border-radius: 0.25rem;
+    /* background-color: yellow; */
 }
 
 .notes-list__item:hover {
@@ -168,13 +169,6 @@
     transition-duration: 100ms;
 }
 
-/*
-.note-editor__header__save button {
-}
-
-.note-editor__header__save button {
-} */
-
 .note-editor__title input {
     position: relative;
     left: 3rem;
@@ -189,6 +183,19 @@
 .note-editor__content {
     margin: 1.5rem;
     padding: 2rem;
+}
+
+.note-editor__header__close-editor {
+    position: absolute;
+    right: 2vw;
+    top: 1vh;
+    width: 2rem;
+    opacity: 80%;
+    cursor: pointer;
+}
+
+.note-editor__header__close-editor:hover {
+    opacity: 100%;
 }
 
 /* Versions Dropdown */
@@ -235,20 +242,41 @@
 
 /* Latest Version - Older Version comparaison */
 
-.note-editor__compare-button {
-    padding: 0.3rem 0.6rem;
+.note-editor__view-previous-note {
     float: right;
     position: relative;
-    right: 2rem;
+    right: 0rem;
     top: 1rem;
+}
+
+.note-editor__view-previous-note__close-history-button {
+    padding: 0.3rem 0.6rem;
+    background-color: rgba(175, 76, 76, 0.8);
+    color: rgb(0, 0, 0) !important;
+    border-radius: 4px;
+    cursor: pointer;
+    border-right: 1rem;
+}
+
+.note-editor__view-previous-note__close-history-button:hover {
+    color: white !important;
+}
+
+.note-editor__view-previous-note__compare-button {
+    padding: 0.3rem 0.6rem;
+    position: relative;
+    left: 1rem;
     background-color: rgb(76, 175, 80, 0.8);
     color: white;
-    border: none;
     border-radius: 4px;
     cursor: pointer;
 }
 
-.note-editor__compare-close {
+.note-editor__view-previous-note__compare-button:hover {
+    color: white !important;
+}
+
+.note-editor__view-previous-note__compare-close {
     padding: 0.3rem 0.6rem;
     right: 2rem;
     top: 1rem;

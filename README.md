@@ -1,4 +1,4 @@
-# AlloBrain Kata
+# Allo Brain Kata
 
 ## Install and run locally
 

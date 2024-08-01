@@ -1,36 +1,42 @@
-import { useNotesContext } from "../context/NotesContext";
-import { Note } from "../types/notes.type";
 import { useState } from "react";
+import { Note } from "../types/notes.type";
+import { notesActor } from "../states/notesMachine";
+import { useSelector } from "@xstate/react";
 
 export default function NotesList() {
-    const { notes, currNoteId, setCurrNoteId, removeNote } = useNotesContext();
-
     const [showDeleteModal, setShowDeleteModal] = useState(false);
-    const [noteToDelete, setNoteToDelete] = useState<string | null>(null);
+    const [noteToDeleteId, setNoteToDeleteId] = useState("");
 
-    const handleDeleteClick = (noteId: string) => {
-        setNoteToDelete(noteId);
+    const onDeleteIconClick = (noteId: string) => {
+        setNoteToDeleteId(noteId);
         setShowDeleteModal(true);
     };
 
-    const handleConfirmDelete = () => {
-        if (noteToDelete) {
-            removeNote(noteToDelete);
-            setShowDeleteModal(false);
-            setNoteToDelete(null);
-        }
+    const onDeleteConfirmBtnClick = () => {
+        setShowDeleteModal(false);
+        notesActor.send({ type: "DELETE_NOTE", id: noteToDeleteId });
+        setNoteToDeleteId("");
     };
+
+    const notes = useSelector(notesActor, (st) => st.context.notes);
+    const selectedNoteId = useSelector(notesActor, (st) => st.context.selectedNoteId);
+
     const ListItem = ({ note }: { note: Note }) => (
-        <li key={note.id} className={`notes-list__item`} onClick={() => setCurrNoteId(note.id)}>
-            <span className={`${currNoteId === note.id ? " selected" : ""}`}>{note.title}</span>
+        <li
+            key={note.id}
+            className={`notes-list__item`}
+            onClick={() => notesActor.send({ type: "SELECT_NOTE", id: note.id })}
+        >
+            <span className={`${selectedNoteId === note.id ? " selected" : ""}`}>{note.title}</span>
             <img
                 src="/delete-note.svg"
                 alt="Delete"
                 className="notes-list__delete-icon"
                 onClick={(e) => {
                     e.stopPropagation();
-                    handleDeleteClick(note.id);
+                    onDeleteIconClick(note.id);
                 }}
+                hidden={selectedNoteId === note.id}
             />
         </li>
     );
@@ -47,7 +53,10 @@ export default function NotesList() {
             {showDeleteModal && (
                 <div className="delete-modal">
                     <p>Are you sure you want to delete this note?</p>
-                    <button className="delete-modal__confirm" onClick={handleConfirmDelete}>
+                    <button
+                        className="delete-modal__confirm"
+                        onClick={(evt) => onDeleteConfirmBtnClick(evt)}
+                    >
                         Yes, delete&nbsp;
                     </button>
                     <button

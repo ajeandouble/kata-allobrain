@@ -1,49 +1,45 @@
-import { useState, useCallback } from "react";
 import NotesList from "./NotesList";
+import { debounce as debounceFunc } from "../utils/";
+import { useState, useCallback } from "react";
+import { notesActor } from "../states/notesMachine";
+import { useSelector } from "@xstate/react";
 import NoteEditor from "./NoteEditor";
-import { Note } from "../types/notes.type";
-import { useNotesContext } from "../context/NotesContext";
-import { throttle } from "../utils";
 
 export default function Notes() {
-    const { currNoteId, setCurrNoteId, createNote, notesVersions } = useNotesContext();
-    const [showSidebar, setShowSidebar] = useState(true);
+    const [showSidePanel, setShowSidePanel] = useState(true);
 
-    const handleNewNote = async () => {
-        const newNote: Note | undefined = await createNote({
-            title: "Untitled Note",
-            content: "",
-        });
-        if (newNote) setCurrNoteId(newNote.id);
-    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    const onNewNoteClick = useCallback(
+        debounceFunc(() => handleNewNote(), 1000),
+        []
+    );
 
-    const onNewNoteClick = useCallback(throttle(handleNewNote, 1000), []);
+    const handleNewNote = () => notesActor.send({ type: "ADD_NOTE" });
+
+    const st = useSelector(notesActor, (st) => st.value);
+    const isShowingEditor = useSelector(notesActor, (st) => st.matches("showingEditor"));
 
     return (
         <div className="notes">
             <img
                 className="notes__sidebar-toggle"
                 src="/burger-menu.svg"
-                onClick={() => setShowSidebar((prevState) => !prevState)}
+                onClick={() => setShowSidePanel((prev) => !prev)}
             ></img>
             <img
-                hidden={!showSidebar}
+                hidden={!showSidePanel}
                 className="notes__sidebar-new-note"
                 src="/new-note.svg"
-                // eslint-disable-next-line react-hooks/exhaustive-deps
                 onClick={onNewNoteClick}
             ></img>
             <div className="notes-container">
-                <div className={`notes-container__sidebar${!showSidebar ? " hidden" : ""}`}>
-                    {" "}
+                <div className={`notes-container__sidebar${showSidePanel ? "" : " hidden"}`}>
                     <div className="notes-header">
                         <h3>Notes</h3>
                     </div>
                     <NotesList />
                 </div>
-                <div className="notes-container__content">
-                    {!!currNoteId && notesVersions[currNoteId] && <NoteEditor />}
-                </div>
+                <div className="notes-container__content">{isShowingEditor && <NoteEditor />}</div>
             </div>
         </div>
     );
