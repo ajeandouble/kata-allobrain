@@ -12,10 +12,18 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
+
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
           node-version: '21' # Specify the Node.js version required for your project
+
+      - name: Create env file
+        working-directory: frontend
+        run: |
+          touch .env.production
+          echo API_KEY=${{ secrets.VITE_API_URL }} >> .env.production
+          cat .env.production
 
       - name: Install dependencies
         working-directory: frontend # Set the working directory to the frontend folder
