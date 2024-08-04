@@ -1,0 +1,12 @@
+﻿{
+  "repositoryName": "ajeandouble/kata-allobrain",
+  "pipelineDirectory": "kata-allobrain",
+  "workspaceDirectory": "kata-allobrain/kata-allobrain",
+  "repositories": {
+    "ajeandouble/kata-allobrain": {
+      "repositoryPath": "kata-allobrain/kata-allobrain",
+      "lastRunOn": "08/04/2024 16:59:25 +02:00"
+    }
+  },
+  "lastRunOn": "08/04/2024 16:59:25 +02:00"
+}
