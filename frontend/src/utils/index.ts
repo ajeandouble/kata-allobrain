@@ -8,10 +8,10 @@ export function throttle<T extends Function>(callback: T, delay = 1000) {
         if (timerFlag === null) {
             callback.apply(context, args);
             timerFlag = setTimeout(() => {
-                timerFlag = null;
+                // @ts-expect-error: null incompatible with Timeout type
                 clearTimeout(timerFlag);
+                timerFlag = null;
             }, delay);
-
         }
     };
 }
@@ -26,6 +26,7 @@ export function debounce<T extends Function>(callback: T, delay = 1000) {
         if (timerFlag === null) {
             callback.apply(context, args);
         }
+        // @ts-expect-error: null incompatible with Timeout type
         clearTimeout(timerFlag);
         timerFlag = setTimeout(() => {
             timerFlag = null;

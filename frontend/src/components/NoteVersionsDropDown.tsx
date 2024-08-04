@@ -15,7 +15,7 @@ export default function NoteVersionsDropDown({ handlePreviousVersionSelect }) {
 
     const selectedNoteId = useSelector(notesActor, (state) => state.context.selectedNoteId);
     const allNotesVersions = useSelector(notesActor, (state) => state.context.notesVersions);
-    const notesVersions = allNotesVersions[selectedNoteId];
+    const notesVersions = selectedNoteId !== null ? allNotesVersions[selectedNoteId] : [];
 
     const onNoteVersionClick = (versionIdx) => {
         if (versionIdx === -1) {

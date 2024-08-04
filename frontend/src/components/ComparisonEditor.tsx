@@ -6,13 +6,16 @@ import { notesActor } from "../states/notesMachine";
 import { diffWords } from "diff";
 
 export default function ComparisonEditor() {
-    const [comparisonEditorState, setComparisonEditorState] = useState(null);
+    const [comparisonEditorState, setComparisonEditorState] = useState<EditorState>(
+        EditorState.createEmpty()
+    );
     const selectedNoteVersion = useSelector(notesActor, (st) => st.context.selectedNoteVersion);
     const selectedNoteId = useSelector(notesActor, (st) => st.context.selectedNoteId);
     const allNotesVersions = useSelector(notesActor, (st) => st.context.notesVersions);
-    const notesVersions = allNotesVersions[selectedNoteId];
+    const notesVersions = selectedNoteId != null ? allNotesVersions[selectedNoteId] : [];
 
     useEffect(() => {
+        if (selectedNoteVersion == null) return;
         const currentContent = JSON.parse(notesVersions[selectedNoteVersion].content).blocks[0]
             .text;
         const latestContent = JSON.parse(notesVersions[0].content).blocks[0].text;
