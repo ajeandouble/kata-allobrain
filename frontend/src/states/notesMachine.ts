@@ -6,13 +6,13 @@ import { notify, notifyError, ERROR_MSGS } from "../services/toast";
 /* Notes Machine */
 
 export interface NotesContext {
-    selectedNoteId: string | undefined;
+    selectedNoteId: string | null;
     notes: NotesObj;
     notesVersions: NotesVersionsObj;
-    selectedNoteVersion: number;
+    selectedNoteVersion: number | null;
     selectedNoteTitle: string;
     draftContent: string;
-    noteToDeleteId: string;
+    noteToDeleteId: string | null;
 }
 
 // TODO: Use `as const` "enum"
@@ -124,13 +124,16 @@ const notesMachine = setup({
                     target: "loadingNoteVersions",
                     actions: assign({
                         notes: ({ context, event: { output } }) => ({
-                            [output.id]: output,
+                            ...(output?.id ? { [output.id]: output } : {}),
                             ...context.notes,
                         }),
-                        selectedNoteId: ({ event: { output } }) => output.id,
-                        selectedNoteVersion: ({ event: { output } }) => output.latest_version,
-                        draftContent: ({ event: { output } }) => output.content,
-                        selectedNoteTitle: ({ event: { output } }) => output.title,
+                        selectedNoteId: ({ event: { output } }) => (output?.id ? output.id : null),
+                        selectedNoteVersion: ({ event: { output } }) =>
+                            output?.latest_version ? output.latest_version : null,
+                        draftContent: ({ event: { output } }) =>
+                            output?.content ? output.content : "",
+                        selectedNoteTitle: ({ event: { output } }) =>
+                            output?.title ? output.title : "",
                     }),
                 },
                 onError: {
@@ -153,7 +156,9 @@ const notesMachine = setup({
                         notesVersions: ({ context, event: { output } }) =>
                             ({
                                 ...context.notesVersions,
-                                [context.selectedNoteId]: output,
+                                ...(context.selectedNoteId
+                                    ? { [context.selectedNoteId]: output }
+                                    : {}),
                             } as NotesVersionsObj),
                     }),
                 },
@@ -189,10 +194,16 @@ const notesMachine = setup({
         showingEditor: {
             initial: "editing",
             entry: assign({
-                // @ts-ignore
-                draftContent: ({ event: { output } }) => output[0].content,
+                // @ts-expect-error: bad actions typing
+                draftContent: ({ context, event: { output } }) =>
+                    0 in output && output[0].content ? output[0].content : context.draftContent,
                 selectedNoteVersion: -1,
-                selectedNoteTitle: ({ context }) => context.notes[context.selectedNoteId].title,
+                selectedNoteTitle: ({ context }) =>
+                    context?.selectedNoteId &&
+                    context.notes[context.selectedNoteId] &&
+                    context.notes[context.selectedNoteId].title
+                        ? context.notes[context.selectedNoteId].title
+                        : context.selectedNoteTitle,
             }),
             on: {
                 SELECT_NOTE: {
@@ -226,7 +237,9 @@ const notesMachine = setup({
                         },
                         ADD_NOTE_VERSION: {
                             target: "updatingNote",
-                            actions: assign({ draftContent: ({ event }) => event.content }),
+                            actions: assign({
+                                draftContent: ({ event }) => (event?.content ? event.content : ""),
+                            }),
                             guards: ({ event, context }) =>
                                 event.content !==
                                 context.notesVersions[context.selectedNoteId][0].content,
@@ -277,14 +290,16 @@ const notesMachine = setup({
                             actions: assign({
                                 selectedNoteTitle: ({
                                     event: {
-                                        // @ts-ignore
+                                        // @ts-expect-error property title doesn't exist on unknown
                                         output: { title },
                                     },
                                 }) => title,
-                                // @ts-ignore
+                                // @ts-expect-error bad actions typing
                                 notes: ({ context, event: { output } }) => ({
                                     ...context.notes,
-                                    [context.selectedNoteId]: output,
+                                    ...(context.selectedNoteId
+                                        ? { [context.selectedNoteId]: output }
+                                        : {}),
                                 }),
                             }),
                         },
@@ -293,7 +308,9 @@ const notesMachine = setup({
                             actions: [
                                 assign({
                                     selectedNoteTitle: ({ context }) =>
-                                        context.notes[context.selectedNoteId].title,
+                                        context.selectedNoteId
+                                            ? context.notes[context.selectedNoteId].title
+                                            : context.selectedNoteTitle,
                                 }),
                                 () => notifyError(ERROR_MSGS.UPDATING_NOTE),
                             ],
@@ -311,10 +328,12 @@ const notesMachine = setup({
                         onDone: {
                             target: "editing",
                             actions: assign({
-                                // @ts-ignore
+                                // @ts-expect-error bad actions typing
                                 notesVersions: ({ context, event: { output } }) => ({
                                     ...context.notesVersions,
-                                    [context.selectedNoteId]: output,
+                                    ...(context.selectedNoteId
+                                        ? { [context.selectedNoteId]: output }
+                                        : {}),
                                 }),
                             }),
                         },

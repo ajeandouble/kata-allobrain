@@ -11,18 +11,18 @@ import { useSelector } from "@xstate/react";
 const TAB_SIZE = 4;
 
 export default function NoteEditor() {
-    const inputTitleRef = useRef();
+    const inputTitleRef = useRef<HTMLInputElement>(null);
     const notesVersions = useSelector(notesActor, (st) => st.context.notesVersions);
     const selectedNoteId = useSelector(notesActor, (st) => st.context.selectedNoteId);
     const selectedNoteTitle = useSelector(notesActor, (st) => st.context.selectedNoteTitle);
     const selectedNoteVersion = useSelector(notesActor, (st) => st.context.selectedNoteVersion);
     const draftContent = useSelector(notesActor, (st) => st.context.draftContent);
     const isViewingPrevVersion = useSelector(notesActor, (st) =>
-        // @ts-expect-error: matches arg is typed never
+        // @ts-expect-error: relative path can't be typed correctly
         st.matches("showingEditor.viewingPreviousVersion")
     );
     const isComparingPrevVersion = useSelector(notesActor, (st) =>
-        // @ts-expect-error: matches arg is typed never
+        // @ts-expect-error: relative path can't be typed correctly
         st.matches("showingEditor.comparingPreviousVersion")
     );
     const [title, setTitle] = useState(selectedNoteTitle);
@@ -47,6 +47,7 @@ export default function NoteEditor() {
                 setEditorState(EditorState.createEmpty());
             }
         } else {
+            if (!selectedNoteId || selectedNoteVersion == null || selectedNoteVersion < 0) return;
             const prevRawContent = notesVersions[selectedNoteId][selectedNoteVersion].content;
             if (prevRawContent) {
                 setEditorState(
@@ -79,7 +80,8 @@ export default function NoteEditor() {
     const onInputKeyDown = (evt: React.ChangeEvent<HTMLInputElement>) => {
         if ("key" in evt && evt.key === "Enter" && evt.target.value) {
             notesActor.send({ type: "UPDATE_NOTE_TITLE", title: evt.target.value });
-            editorRef!.current!.focusEditor();
+            // @ts-expect-error: not typed
+            editorRef?.current?.focusEditor();
         }
     };
 
@@ -155,7 +157,6 @@ export default function NoteEditor() {
                         editorClassName="editor-class"
                         toolbarHidden={true}
                         onTab={onTab}
-                        // handleReturn={handleReturn}
                     />
                 )}
             </div>
