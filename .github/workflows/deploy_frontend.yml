@@ -7,7 +7,8 @@ on:
 
 jobs:
   build:
-    runs-on: self-hosted
+    runs-on: [self-hosted, frontend]  # Ensures this job runs only on your specific self-hosted runner
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v3

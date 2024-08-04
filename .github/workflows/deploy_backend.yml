@@ -7,7 +7,7 @@ on:
 
 jobs:
   deploy:
-    runs-on: self-hosted  # Ensures this job runs on your self-hosted runner
+    runs-on: [self-hosted, backend]  # Ensures this job runs only on your specific self-hosted runner
 
     steps:
       - name: Checkout code
@@ -16,7 +16,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v2
         with:
-          python-version: '3.12'
+          python-version: '3.12.4'
 
       - name: Install dependencies
         run: |
