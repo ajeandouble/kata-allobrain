@@ -76,7 +76,7 @@ export default function ComparisonEditor() {
                 toolbarHidden={true}
                 customStyleMap={{
                     HIGHLIGHT_ADDED: {
-                        backgroundColor: "#f200ff",
+                        backgroundColor: "#f200fe",
                     },
                     HIGHLIGHT_REMOVED: {
                         backgroundColor: "#068e00",
