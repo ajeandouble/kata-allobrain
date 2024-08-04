@@ -1,5 +1,5 @@
 import { setup, assign, fromPromise, createActor } from "xstate";
-import { NotesObj, NotesVersionsObj, NoteVersion } from "../types/notes.type";
+import { Note, NotesObj, NotesVersionsObj, NoteVersion } from "../types/notes.type";
 import { deleteNote, getAllNotes, getAllNoteVersions, patchNote, postNote } from "../api/notes.api";
 import { notify, notifyError, ERROR_MSGS } from "../services/toast";
 
@@ -65,8 +65,7 @@ const notesMachine = setup({
         }),
     },
     actions: {
-        notify: (_, params) => {
-            console.log("notify", _);
+        notify: (_, params: { msg: string; options: unknown }) => {
             if (params.options) {
                 notify(params.msg, params.options);
             } else {
@@ -190,6 +189,7 @@ const notesMachine = setup({
         showingEditor: {
             initial: "editing",
             entry: assign({
+                // @ts-ignore
                 draftContent: ({ event: { output } }) => output[0].content,
                 selectedNoteVersion: -1,
                 selectedNoteTitle: ({ context }) => context.notes[context.selectedNoteId].title,
@@ -277,9 +277,11 @@ const notesMachine = setup({
                             actions: assign({
                                 selectedNoteTitle: ({
                                     event: {
+                                        // @ts-ignore
                                         output: { title },
                                     },
                                 }) => title,
+                                // @ts-ignore
                                 notes: ({ context, event: { output } }) => ({
                                     ...context.notes,
                                     [context.selectedNoteId]: output,
@@ -309,6 +311,7 @@ const notesMachine = setup({
                         onDone: {
                             target: "editing",
                             actions: assign({
+                                // @ts-ignore
                                 notesVersions: ({ context, event: { output } }) => ({
                                     ...context.notesVersions,
                                     [context.selectedNoteId]: output,

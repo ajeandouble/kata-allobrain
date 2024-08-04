@@ -1,9 +1,19 @@
-import { GetNoteRes, PostNoteRes, GetNoteVersionsReq, PostNoteReq, PatchNoteReq, PatchNoteRes, DeleteNoteVersionReq, GetNoteVersionRes, GetAllNoteVersionsRes, GetAllNotesRes, NoteVersion } from "../types/notes.type";
+// @ts-ignore
+import {
+    GetNoteRes,
+    PostNoteRes,
+    GetNoteVersionsReq,
+    PostNoteReq,
+    PatchNoteReq,
+    PatchNoteRes,
+    DeleteNoteVersionReq,
+    GetAllNoteVersionsRes,
+} from "../types/notes.type";
 import ky from "../services/ky";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
-async function getNote() { }
+async function getNote() {}
 
 async function getAllNotes(): Promise<GetNoteRes[] | undefined> {
     return await ky.get(`${API_URL}/notes/`).json();
@@ -25,7 +35,9 @@ async function patchNote(props: PatchNoteReq) {
     try {
         const data = await ky.patch(`${API_URL}/notes/${id}`, { json: body }).json();
         return data as PatchNoteRes;
-    } catch (err) { console.error(err); }
+    } catch (err) {
+        console.error(err);
+    }
 }
 
 async function deleteNote(props: DeleteNoteVersionReq) {
@@ -37,17 +49,19 @@ async function deleteNote(props: DeleteNoteVersionReq) {
     }
 }
 
-async function getAllNoteVersions(props: GetNoteVersionsReq): Promise<GetAllNoteVersionsRes | undefined> {
+async function getAllNoteVersions(
+    props: GetNoteVersionsReq
+): Promise<GetAllNoteVersionsRes | undefined> {
     const { id } = props.params;
     try {
-        const data = await ky.get(`${API_URL}/notes/${id}/versions`).json() as GetAllNoteVersionsRes;
-        if (!(data?.length > 0))
-            throw new Error("Can't fetch note versions");
+        const data = (await ky
+            .get(`${API_URL}/notes/${id}/versions`)
+            .json()) as GetAllNoteVersionsRes;
+        if (!(data?.length > 0)) throw new Error("Can't fetch note versions");
         return data;
     } catch (err) {
         console.error(err);
     }
 }
-
 
 export { postNote, getNote, getAllNotes, patchNote, deleteNote, getAllNoteVersions };
