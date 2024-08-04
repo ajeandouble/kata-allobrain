@@ -33,7 +33,7 @@ export default function Notes() {
             <div className="notes-container">
                 <div className={`notes-container__sidebar${showSidePanel ? "" : " hidden"}`}>
                     <div className="notes-header">
-                        <h3>Notes?</h3>
+                        <h3>Notes.</h3>
                     </div>
                     <NotesList />
                 </div>
