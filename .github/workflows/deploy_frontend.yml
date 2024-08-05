@@ -6,6 +6,7 @@ on:
       - main # Trigger the workflow on push to the 'main' branch
     paths:
       - frontend/**
+      - .github/**
 
 jobs:
   build:
