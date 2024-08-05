@@ -58,7 +58,7 @@ jobs:
           User=ubuntu
           WorkingDirectory=/home/ubuntu/actions-runner/_work/kata-allobrain/kata-allobrain/backend
           Environment="ENVIRONMENT=production"
-          ExecStart=/usr/bin/python3 -m uvicorn app.main:app --host 0.0.0.0 --port 8000
+          ExecStart=/home/ubuntu/actions-runner/_work/kata-allobrain/kata-allobrain/backend/venv/bin/uvicorn app.main:app --host 0.0.0.0 --port 8000
           Restart=always
           StandardOutput=append:/var/log/fastapi.log
           StandardError=append:/var/log/fastapi.log
