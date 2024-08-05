@@ -44,8 +44,7 @@ jobs:
           pipenv install psycopg2-binary
           #   nohup pipenv run uvicorn app.main:app --host 0.0.0.0 --port 8000 > uvicorn.log 2>&1 &
           nohup pipenv run uvicorn app.main:app --host 0.0.0.0 --port 8000 2>&1 > uvicorn.log &
-
-
+          sleep 10
 
 
 
