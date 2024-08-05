@@ -70,6 +70,7 @@ jobs:
           sudo touch /var/log/fastapi.log
           sudo chown ubuntu:ubuntu /var/log/fastapi.log
 
+
       - name: Reload systemd and restart service
         run: |
           sudo systemctl daemon-reload
