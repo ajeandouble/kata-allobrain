@@ -21,7 +21,7 @@ jobs:
       - name: Install dependencies
         run: |
           pip3 install pipenv
-          pipenv shell
+          pipenv run
 
       - name: Create env file
         working-directory: frontend
