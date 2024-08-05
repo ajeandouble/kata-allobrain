@@ -8,6 +8,7 @@ on:
 jobs:
   build:
     runs-on: [self-hosted, frontend]  # Ensures this job runs only on your specific self-hosted runner
+    timeout-minutes: 5
 
     steps:
       - name: Checkout code
@@ -17,7 +18,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '21' # Specify the Node.js version required for your project
+          node-version: '21'
 
       - name: Create env file
         working-directory: frontend
@@ -27,12 +28,12 @@ jobs:
           cat .env.production
 
       - name: Install dependencies
-        working-directory: frontend # Set the working directory to the frontend folder
+        working-directory: frontend
         run: pnpm install
 
       - name: Build
-        working-directory: frontend # Set the working directory to the frontend folder
-        run: pnpm run build # Assumes a build script is defined in package.json
+        working-directory: frontend
+        run: pnpm run build
 
       - name: Deploy to S3
         run: |

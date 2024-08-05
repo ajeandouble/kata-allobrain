@@ -8,6 +8,7 @@ on:
 jobs:
   deploy:
     runs-on: [self-hosted, backend]  # Ensures this job runs only on your specific self-hosted runner
+    timeout-minutes: 5
 
     steps:
       - name: Checkout code
@@ -21,7 +22,6 @@ jobs:
       - name: Install dependencies
         run: |
           pip3 install pipenv
-          pipenv run
 
       - name: Create env file
         working-directory: frontend
@@ -32,6 +32,5 @@ jobs:
 
       - name: Deploy to Server
         run: |
-          # Your deployment commands here, e.g., starting uvicorn
           export ENVIRONMENT=production
           pipenv run uvicorn app.main:app --host 0.0.0.0 --port 8000
