@@ -22,6 +22,8 @@ jobs:
       - name: Install dependencies
         working-directory: backend
         run: |
+          pwd
+          ls -la
           pip3 install pipenv
           pipenv install
 
@@ -31,12 +33,15 @@ jobs:
           touch .env.production
           echo DATABASE_URL=${{ secrets.DATABASE_URL }} >> .env.production
           cat .env.production
-          pwd
 
       - name: Deploy to Server
         working-directory: backend
         run: |
-          pwd
           export ENVIRONMENT=production
-          pipenv install psycopg2-binary
-          nohup pipenv run uvicorn app.main:app --host 0.0.0.0 --port 8000 2>&1 &
+          pipenv install psycopg2-binarynohup pipenv run uvicorn app.main:app --host 0.0.0.0 --port 8000 > uvicorn.log 2>&1 &
+
+
+
+
+
+
