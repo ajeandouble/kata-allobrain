@@ -39,7 +39,7 @@ jobs:
         working-directory: backend
         run: |
           touch .env.production
-          echo VITE_API_URL=${{ secrets.DATABASE_URL }} >> .env.production
+          echo DATABASE_URL=${{ secrets.DATABASE_URL }} >> .env.production
           cat .env.production
           pwd
 
