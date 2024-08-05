@@ -43,6 +43,7 @@ jobs:
           cat .env.production
 
       - name: Deploy to Server
+        working-directory: backend
         run: |
           export ENVIRONMENT=production
-          pipenv run python3 -m uvicorn app.main:app --host 0.0.0.0 --port 8000
+          pipenv run uvicorn app.main:app --host 0.0.0.0 --port 8000
