@@ -10,7 +10,7 @@ on:
 
 jobs:
   deploy:
-    runs-on: [self-hosted, backend]  # Ensures this job runs only on your specific self-hosted runner
+    runs-on: [self-hosted, backend]
     timeout-minutes: 5
 
     steps:
@@ -22,13 +22,19 @@ jobs:
         with:
           python-version: '3.12.x'
 
+
+      - name: Generate requirements.txt
+        working-directory: backend
+        run: |
+          pipenv lock -r > requirements.txt
+          cat requirements.txt
+
       - name: Install dependencies
         working-directory: backend
         run: |
-          pwd
-          ls -la
-          pip3 install pipenv
-          pipenv install
+          pip3 install --upgrade pip
+          pip3 install -r requirements.txt
+          pip3 install psycopg2-binary
 
       - name: Create env file
         working-directory: backend
@@ -42,12 +48,4 @@ jobs:
         run: |
           sudo apt install screen
           export ENVIRONMENT=production
-          pipenv install psycopg2-binary
-          #   nohup pipenv run uvicorn app.main:app --host 0.0.0.0 --port 8000 > uvicorn.log 2>&1 &
-          setsid pipenv run uvicorn app.main:app --host 0.0.0.0 --port 8000 > uvicorn.log 2>&1 &
-          #   screen -S uvicorn
-          sleep 10
-
-
-
-
+          setsid python3 -m uvicorn app.main:app --
