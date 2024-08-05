@@ -27,6 +27,7 @@ jobs:
         working-directory: backend
         run: |
           pip3 install pipenv
+          pipenv lock
           pipenv requirements > requirements.txt
           cat requirements.txt
 
