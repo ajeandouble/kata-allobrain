@@ -9,7 +9,7 @@ uvicorn = "*"
 sqlalchemy = "*"
 databases = "*"
 httpx = "*"
-dotenv = "*"
+python-dotenv = "*"
 
 [dev-packages]
 pytest = "*"
