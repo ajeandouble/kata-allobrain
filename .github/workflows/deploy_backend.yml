@@ -31,12 +31,14 @@ jobs:
           pipenv requirements > requirements.txt
           cat requirements.txt
 
-      - name: Install dependencies
+      - name: Set up virtual environment
         working-directory: backend
         run: |
-          pip3 install --upgrade pip
-          pip3 install -r requirements.txt
-          pip3 install psycopg2-binary uvicorn
+          python3 -m venv venv
+          source venv/bin/activate
+          pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install psycopg2-binary uvicorn
 
       - name: Create env file
         working-directory: backend
@@ -69,7 +71,6 @@ jobs:
         run: |
           sudo touch /var/log/fastapi.log
           sudo chown ubuntu:ubuntu /var/log/fastapi.log
-
 
       - name: Reload systemd and restart service
         run: |
