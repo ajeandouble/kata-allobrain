@@ -19,6 +19,16 @@ jobs:
         with:
           python-version: '3.12.x'
 
+      - name: Verify working directory
+        run: pwd
+
+      - name: List files in root
+        run: ls -la
+
+      - name: List files in backend directory
+        working-directory: backend
+        run: ls -la
+
       - name: Install dependencies
         working-directory: backend
         run: |
