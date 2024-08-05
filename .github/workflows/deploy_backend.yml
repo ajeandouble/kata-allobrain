@@ -55,7 +55,7 @@ jobs:
           [Service]
           User=ubuntu
           WorkingDirectory=/home/ubuntu/actions-runner/_work/kata-allobrain/kata-allobrain/backend
-          ExecStart=export environment=produciton; /usr/bin/python3 -m uvicorn app.main:app --host 0.0.0.0 --port 8000
+          ExecStart=export environment=production; /usr/bin/python3 -m uvicorn app.main:app --host 0.0.0.0 --port 8000
           Restart=always
 
           [Install]
