@@ -25,6 +25,7 @@ class Settings:
         else:
             env_path = os.path.join(os.path.dirname(__file__), "../.env.production")
 
+        print(env_path)
         if not load_dotenv(dotenv_path=env_path):
             raise FileNotFoundError(f"Environment file {env_path} not found")
         for key in ENVIRONMENT_VARS:

@@ -41,9 +41,11 @@ jobs:
           touch .env.production
           echo VITE_API_URL=${{ secrets.DATABASE_URL }} >> .env.production
           cat .env.production
+          pwd
 
       - name: Deploy to Server
         working-directory: backend
         run: |
+          pwd
           export ENVIRONMENT=production
           pipenv run uvicorn app.main:app --host 0.0.0.0 --port 8000
