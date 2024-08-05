@@ -55,18 +55,26 @@ jobs:
           [Service]
           User=ubuntu
           WorkingDirectory=/home/ubuntu/actions-runner/_work/kata-allobrain/kata-allobrain/backend
-          ExecStart=export environment=production; /usr/bin/python3 -m uvicorn app.main:app --host 0.0.0.0 --port 8000
+          Environment="ENVIRONMENT=production"
+          ExecStart=/usr/bin/python3 -m uvicorn app.main:app --host 0.0.0.0 --port 8000
           Restart=always
+          StandardOutput=append:/var/log/fastapi.log
+          StandardError=append:/var/log/fastapi.log
 
           [Install]
           WantedBy=multi-user.target
           EOL
 
-      - name: Start and enable FastAPI service
+      - name: Set permissions for log file
         run: |
-            sudo systemctl daemon-reload
-            sudo systemctl start fastapi
-            sudo systemctl enable fastapi
+          sudo touch /var/log/fastapi.log
+          sudo chown ubuntu:ubuntu /var/log/fastapi.log
+
+      - name: Reload systemd and restart service
+        run: |
+          sudo systemctl daemon-reload
+          sudo systemctl restart fastapi
+          sudo systemctl enable fastapi
 
     #   - name: Deploy to Server
     #     working-directory: backend
