@@ -48,4 +48,5 @@ jobs:
         run: |
           pwd
           export ENVIRONMENT=production
+          pipenv install psycopg2-binary --user
           pipenv run uvicorn app.main:app --host 0.0.0.0 --port 8000
