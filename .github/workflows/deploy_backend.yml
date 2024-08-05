@@ -20,12 +20,13 @@ jobs:
           python-version: '3.12.x'
 
       - name: Install dependencies
+        working-directory: backend
         run: |
           pip3 install pipenv
           pipenv install
 
       - name: Create env file
-        working-directory: frontend
+        working-directory: backend
         run: |
           touch .env.production
           echo VITE_API_URL=${{ secrets.DATABASE_URL }} >> .env.production
