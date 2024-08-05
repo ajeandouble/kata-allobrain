@@ -38,8 +38,8 @@ jobs:
         working-directory: backend
         run: |
           export ENVIRONMENT=production
-          pipenv install psycopg2-binarynohup
-          pipenv run uvicorn app.main:app --host 0.0.0.0 --port 8000 > uvicorn.log 2>&1 &
+          pipenv install psycopg2-binary
+          nohup pipenv run uvicorn app.main:app --host 0.0.0.0 --port 8000 > uvicorn.log 2>&1 &
 
 
 
