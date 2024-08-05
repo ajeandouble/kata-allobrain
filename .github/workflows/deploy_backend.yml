@@ -44,7 +44,7 @@ jobs:
           export ENVIRONMENT=production
           pipenv install psycopg2-binary
           #   nohup pipenv run uvicorn app.main:app --host 0.0.0.0 --port 8000 > uvicorn.log 2>&1 &
-          nohup pipenv run python3 -m uvicorn app.main:app --host 0.0.0.0 --port 8000 2>&1 > uvicorn.log &
+          screen -dm bash -c "pipenv run uvicorn app.main:app --host 0.0.0.0 --port 8000"
           #   screen -S uvicorn
           sleep 10
 
