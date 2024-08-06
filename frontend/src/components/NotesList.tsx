@@ -56,7 +56,7 @@ export default function NotesList() {
                         className="delete-modal__confirm"
                         onClick={() => onDeleteConfirmBtnClick()}
                     >
-                        Yes, delete&nbsp;
+                        Yes, delete!
                     </button>
                     <button
                         className="delete-modal__cancel"
