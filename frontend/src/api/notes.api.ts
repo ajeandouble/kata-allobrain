@@ -12,6 +12,8 @@ import ky from "../services/ky";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
+console.log(API_URL);
+
 async function getNote() {}
 
 async function getAllNotes(): Promise<GetNoteRes[] | undefined> {
