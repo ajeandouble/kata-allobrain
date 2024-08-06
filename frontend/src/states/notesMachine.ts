@@ -3,8 +3,6 @@ import { Note, NotesObj, NotesVersionsObj, NoteVersion } from "../types/notes.ty
 import { deleteNote, getAllNotes, getAllNoteVersions, patchNote, postNote } from "../api/notes.api";
 import { notify, notifyError, ERROR_MSGS } from "../services/toast";
 
-/* Notes Machine */
-
 export interface NotesContext {
     selectedNoteId: string | null;
     notes: NotesObj;

@@ -25,9 +25,9 @@ cors_options = {
 app.add_middleware(CORSMiddleware, **cors_options)  # type: ignore
 
 
-@app.get("/health")
+@app.get("/api/health")
 async def get_health():
     return {"Status": "Ok"}
 
 
-app.include_router(notes.router, prefix="/notes", tags=["notes"])
+app.include_router(notes.router, prefix="/api/notes", tags=["notes"])
