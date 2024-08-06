@@ -193,8 +193,7 @@ const notesMachine = setup({
             initial: "editing",
             entry: assign({
                 // @ts-expect-error: bad actions typing
-                draftContent: ({ context, event: { output } }) =>
-                    0 in output && output[0].content ? output[0].content : context.draftContent,
+                draftContent: ({ context, event: { output } }) => output[0]?.content,
                 selectedNoteVersion: -1,
                 selectedNoteTitle: ({ context }) =>
                     context?.selectedNoteId &&
@@ -284,7 +283,7 @@ const notesMachine = setup({
                             context: { selectedNoteId, selectedNoteTitle, draftContent },
                         }) => ({ selectedNoteId, selectedNoteTitle, draftContent }),
                         onDone: {
-                            target: "refreshNoteVersions",
+                            target: "refreshingNoteVersions",
                             actions: assign({
                                 selectedNoteTitle: ({
                                     event: {
@@ -315,7 +314,7 @@ const notesMachine = setup({
                         },
                     },
                 },
-                refreshNoteVersions: {
+                refreshingNoteVersions: {
                     invoke: {
                         id: "fetchNoteVersions",
                         src: "getNoteVersions",

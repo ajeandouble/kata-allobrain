@@ -11,7 +11,7 @@ const cachedKy = ky.extend({
                 const cacheKey = new URL(request.url).pathname;
                 if (request.method.toUpperCase() === "GET" && notesVersionsCache.has(cacheKey)) {
                     return new Response(JSON.stringify(notesVersionsCache.get(cacheKey)), {
-                        headers: { 'Content-Type': 'application/json' },
+                        headers: { "Content-Type": "application/json" },
                     });
                 }
             },
@@ -25,11 +25,10 @@ const cachedKy = ky.extend({
                         const match = cacheKey.match(urlPattern);
                         if (match && match.groups && match.groups.id) {
                             const noteId = match.groups.id;
-                            notesVersionsCache.delete(`/notes/${noteId}`);
-                            notesVersionsCache.delete(`/notes/${noteId}/versions`);
+                            notesVersionsCache.delete(`/api/notes/${noteId}`);
+                            notesVersionsCache.delete(`/api/notes/${noteId}/versions`);
                         }
-                    }
-                    else {
+                    } else {
                         notesVersionsCache.set(cacheKey, data);
                     }
                 }
