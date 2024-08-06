@@ -17,6 +17,8 @@ export default function Notes() {
 
     const handleNewNote = () => notesActor.send({ type: "ADD_NOTE" });
 
+    const state = useSelector(notesActor, (state) => state);
+    console.log(state.value);
     return (
         <div className="notes">
             <img

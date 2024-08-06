@@ -15,7 +15,12 @@ const API_URL = import.meta.env.VITE_API_URL;
 async function getNote() {}
 
 async function getAllNotes(): Promise<GetNoteRes[] | undefined> {
-    return await ky.get(`${API_URL}/notes/`).json();
+    try {
+        return await ky.get(`${API_URL}/notes/`).json();
+    } catch (err) {
+        console.error(err);
+        throw new Error();
+    }
 }
 
 async function postNote(props: PostNoteReq): Promise<PostNoteRes | undefined> {
@@ -25,6 +30,7 @@ async function postNote(props: PostNoteReq): Promise<PostNoteRes | undefined> {
         return data as PostNoteRes;
     } catch (err) {
         console.error(err);
+        throw new Error();
     }
 }
 
@@ -36,6 +42,7 @@ async function patchNote(props: PatchNoteReq) {
         return data as PatchNoteRes;
     } catch (err) {
         console.error(err);
+        throw new Error();
     }
 }
 
@@ -45,6 +52,7 @@ async function deleteNote(props: DeleteNoteVersionReq) {
         await ky.delete(`${API_URL}/notes/${id}`);
     } catch (err) {
         console.error(err);
+        throw new Error();
     }
 }
 
@@ -60,6 +68,7 @@ async function getAllNoteVersions(
         return data;
     } catch (err) {
         console.error(err);
+        throw new Error(err);
     }
 }
 

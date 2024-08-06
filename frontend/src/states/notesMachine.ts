@@ -150,15 +150,18 @@ const notesMachine = setup({
                 }),
                 onDone: {
                     target: "showingEditor",
-                    actions: assign({
-                        notesVersions: ({ context, event: { output } }) =>
-                            ({
-                                ...context.notesVersions,
-                                ...(context.selectedNoteId
-                                    ? { [context.selectedNoteId]: output }
-                                    : {}),
-                            } as NotesVersionsObj),
-                    }),
+                    actions: [
+                        assign({
+                            notesVersions: ({ context, event: { output } }) =>
+                                ({
+                                    ...context.notesVersions,
+                                    ...(context.selectedNoteId
+                                        ? { [context.selectedNoteId]: output }
+                                        : {}),
+                                } as NotesVersionsObj),
+                        }),
+                        () => console.log("why the fuck is it succesfull"),
+                    ],
                 },
                 onError: {
                     target: "idle",
@@ -193,7 +196,10 @@ const notesMachine = setup({
             initial: "editing",
             entry: assign({
                 // @ts-expect-error: bad actions typing
-                draftContent: ({ context, event: { output } }) => output[0]?.content,
+                draftContent: ({ context, event: { output } }) => {
+                    console.log({ context, output });
+                    output[0]?.content;
+                },
                 selectedNoteVersion: -1,
                 selectedNoteTitle: ({ context }) =>
                     context?.selectedNoteId &&
@@ -205,7 +211,10 @@ const notesMachine = setup({
             on: {
                 SELECT_NOTE: {
                     target: "loadingNoteVersions",
-                    actions: assign({ selectedNoteId: ({ event }) => event.id }),
+                    actions: [
+                        assign({ selectedNoteId: ({ event }) => event.id }),
+                        () => console.log("jumping to loadingNoteVersions"),
+                    ],
                     guards: ({ event, context }) => event.id !== context.selectedNoteId,
                 },
                 ADD_NOTE: {
