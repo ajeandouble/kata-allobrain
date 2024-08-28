@@ -6,8 +6,8 @@ WORKDIR /app
 RUN pip3 install pipenv
 COPY Pipfile Pipfile.lock .
 RUN pipenv install --system --deploy --ignore-pipfile
-RUN apt-get update && apt-get install -y libpq-dev gcc
-RUN pipenv install  psycopg2
+RUN pipenv install  psycopg2-binary
+
 
 COPY . .
 
